@@ -1,0 +1,73 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "universal-zone": {
+      "projectType": "library",
+      "root": "projects/universal-zone",
+      "sourceRoot": "projects/universal-zone/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/universal-zone/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/universal-zone/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/universal-zone/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/universal-zone/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        }
+      }
+    },
+    "ngx-universal-zone": {
+      "projectType": "library",
+      "root": "projects/ngx-universal-zone",
+      "sourceRoot": "projects/ngx-universal-zone/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/ngx-universal-zone/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ngx-universal-zone/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/ngx-universal-zone/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/ngx-universal-zone/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
