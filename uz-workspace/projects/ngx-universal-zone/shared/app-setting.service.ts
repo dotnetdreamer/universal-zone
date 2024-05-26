@@ -1,6 +1,6 @@
 import { Injectable, Optional } from '@angular/core';
 
-import { DbService, SchemaService, DbSettingConstant } from './database';
+import { DbService, SchemaService, DbSettingConstant } from '../database';
 
 @Injectable()
 export class AppSettingService {

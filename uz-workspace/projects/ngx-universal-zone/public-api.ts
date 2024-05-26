@@ -4,7 +4,8 @@
 
 //fix: Internal error: failed to get symbol for entrypoint
 // export default {};
-export * from './app-injector';
-export * from './app-setting.service';
+export * from './shared/app-injector';
+export * from './shared/app-setting.service';
+export * from './shared/helper.service';
 
 export * from './universal-zone.module';
