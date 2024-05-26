@@ -49,7 +49,7 @@ export const dbConfig: DbServiceConfig = {
 }
 ```
 
-NOw add `UniversalZoneModule` and `DbModule` in your root `AppModule` imports. Provide your own implementation of schema.
+Now add `UniversalZoneModule` and `DbModule` in your root `AppModule` imports. Provide your own implementation of schema.
 
 ```
 function initializeDb(schemaSvc: SchemaService) {
