@@ -15,7 +15,41 @@ Run `npm run build` to build the project. The build artifacts will be stored in 
 After running `npm run build` go to **dist/ngx-universal-zone** directory and copy the path. Now go to your app and install it just like any other npm package e.g `npm i C:\Git\universal-zone\uz-workspace\dist\ngx-universal-zone`
 
 ## Usage
-Add `UniversalZoneModule` and `DbModule` in your root `AppModule` imports. Provide your own implementation of schema.
+Create a file e.g `db-constant.ts` with following class
+
+```
+import { DbServiceConfig, DbServiceType, DbSettingConfig, DbSettingConstant } from "ngx-universal-zone/database";
+import { ITableOptions } from "ngx-universal-zone/database";
+
+export class DbConstant {
+    public static readonly SETTING = DbSettingConstant.SETTING;
+    public static readonly CUSTOMER = 'customer';
+}
+
+export const dbConfig: DbServiceConfig = {
+    dbType: DbServiceType.IndexDd,
+    dbName: 'choisy',
+    schema: <ITableOptions[]>[
+      { ...DbSettingConfig.schema },  //must needed in order to crate 'setting' table
+      {
+        name: DbConstant.CUSTOMER,
+        columns: [
+          {
+            name: 'email',
+            isPrimaryKey: true,
+            type: 'TEXT',
+          },
+          {
+            name: 'name',
+            type: 'TEXT',
+          }
+        ],
+      },
+    ],
+}
+```
+
+NOw add `UniversalZoneModule` and `DbModule` in your root `AppModule` imports. Provide your own implementation of schema.
 
 ```
 function initializeDb(schemaSvc: SchemaService) {
