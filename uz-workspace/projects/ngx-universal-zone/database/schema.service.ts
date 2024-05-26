@@ -14,7 +14,7 @@ export class SchemaService {
   };
   tables: Record<string, string> = {};
 
-  private _config!: DbServiceConfig
+  private _config = {} as DbServiceConfig;
 
   /**
    * Represents a SchemaService that manages the database schema.

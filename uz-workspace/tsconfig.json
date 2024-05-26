@@ -22,8 +22,8 @@
       "ngx-universal-zone": [
         "./dist/ngx-universal-zone"
       ],
-      "universal-zone": [
-        "./dist/universal-zone"
+      "ngx-universal-zone/database": [
+        "./dist/ngx-universal-zone/database"
       ]
     },
     "lib": [
