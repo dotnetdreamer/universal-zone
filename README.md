@@ -15,7 +15,7 @@ Run `npm run build` to build the project. The build artifacts will be stored in 
 After running `npm run build` go to **dist/ngx-universal-zone** directory and copy the path. Now go to your app and install it just like any other npm package e.g `npm i C:\Git\universal-zone\uz-workspace\dist\ngx-universal-zone`
 
 ## Usage
-Create a file e.g `db-constant.ts` with following class
+Make sure in your root `tsconfig.json` file, target, module and lib is set to `es2022`. Next create a file e.g `db-constant.ts` with following class
 
 ```
 import { DbServiceConfig, DbServiceType, DbSettingConfig, DbSettingConstant } from "ngx-universal-zone/database";
@@ -86,4 +86,22 @@ export class AppModule {
     AppInjector.setInjector(injector);
   }
 }
+
+```
+
+If you are testing the library locall then also go to your app root tsconfig.json file and add the following to **compilerOptions**:
+
+```
+"paths": {
+  "@angular/*": ["./node_modules/@angular/*"],
+}
+```
+
+Now listen to dbinit and the rest do your magic!
+
+```
+this.dbSvc.dbInitialized$.subscribe(async () => {
+  //Your app should start from here
+});
+
 ```

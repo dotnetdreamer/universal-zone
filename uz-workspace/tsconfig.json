@@ -24,6 +24,9 @@
       ],
       "ngx-universal-zone/database": [
         "./dist/ngx-universal-zone/database"
+      ],
+      "ngx-universal-zone/pub-sub": [
+        "./dist/ngx-universal-zone/pub-sub"
       ]
     },
     "lib": [
