@@ -8,4 +8,4 @@ export * from './shared/app-injector';
 export * from './shared/app-setting.service';
 export * from './shared/helper.service';
 
-export * from './universal-zone.module';
+export * from './shared/universal-zone.module';
