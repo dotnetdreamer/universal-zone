@@ -28,6 +28,11 @@ export abstract class DbService {
     return;
   }
 
+  putAllLocal(store: string, opts: any): Promise<any> {
+    // @ts-ignore
+    return;
+  }
+
   get<T>(store: string, key: any): Promise<T> {
     // @ts-ignore
     return;

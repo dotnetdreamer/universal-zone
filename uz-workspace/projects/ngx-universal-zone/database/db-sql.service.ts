@@ -126,6 +126,10 @@ export class DbSqliteService implements DbService {
     });
   }
 
+  putAllLocal(store: string, opts: any): Promise<any> {
+    throw 'putAllLocal not impleted in db-sql yet';
+  }
+
   get<T>(store: string, key: any): Promise<T> {
     return new Promise(async (resolve, reject) => {
       //get primary key field form schema

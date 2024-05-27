@@ -72,7 +72,7 @@ export class DbWebService extends Dexie implements DbService {
     });
   }
 
-  putAll(store: string, opts: any): Promise<any> {
+  putAllLocal(store: string, opts: any): Promise<any> {
     return this.db.table(store).bulkAdd(opts);
   }
 
