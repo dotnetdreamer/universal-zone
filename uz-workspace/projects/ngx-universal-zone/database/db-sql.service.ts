@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 // import * as CapacitorSQLPlugin from 'capacitor-sqlite';
 
 import { SchemaService, ITableOptions } from './schema.service';
@@ -126,8 +126,13 @@ export class DbSqliteService implements DbService {
     });
   }
 
-  putAllLocal(store: string, opts: any): Promise<any> {
-    throw 'putAllLocal not impleted in db-sql yet';
+  putLocalRx(store, data) {
+    return new Observable((observer) => {
+      this.putLocal(store, data).then((result) => {
+        observer.next(result);
+        observer.complete();
+      });
+    });
   }
 
   get<T>(store: string, key: any): Promise<T> {
@@ -151,6 +156,11 @@ export class DbSqliteService implements DbService {
         reject(e);
       }
     });
+  }
+
+  getRx<T>(store: string, key: any): Observable<T> { 
+    // @ts-ignore
+    return; 
   }
 
   getAll<T>(store: string): Promise<T> {

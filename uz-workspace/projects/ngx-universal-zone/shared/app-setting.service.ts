@@ -1,6 +1,7 @@
 import { Injectable, Optional } from '@angular/core';
 
 import { DbService, SchemaService, DbSettingConstant } from '../database';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class AppSettingService {
@@ -26,6 +27,15 @@ export class AppSettingService {
           return null;
         });
     }
+  }
+
+  protected getRx<T>(key: string) {
+    return new Observable<T>((observer) => {
+      this.get<T>(key).then((setting) => {
+        observer.next(setting);
+        observer.complete();
+      });
+    });
   }
 
   protected put(key: string, values) {

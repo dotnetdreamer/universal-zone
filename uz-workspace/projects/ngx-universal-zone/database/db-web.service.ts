@@ -1,7 +1,7 @@
 import { Injectable, Optional } from '@angular/core';
 
 import Dexie, { Collection, IndexableType, Table } from 'dexie';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 import { SchemaService } from './schema.service';
 import { DbService, DbServiceConfig } from './db-base.service';
@@ -72,8 +72,13 @@ export class DbWebService extends Dexie implements DbService {
     });
   }
 
-  putAllLocal(store: string, opts: any): Promise<any> {
-    return this.db.table(store).bulkAdd(opts);
+  putLocalRx(store, data) {
+    return new Observable((observer) => {
+      this.putLocal(store, data).then((result) => {
+        observer.next(result);
+        observer.complete();
+      });
+    });
   }
 
   get<T>(store: string, key: any): Promise<T> {
@@ -84,6 +89,15 @@ export class DbWebService extends Dexie implements DbService {
         .then((r) => {
           resolve(<T>r);
         });
+    });
+  }
+
+  getRx<T>(store: string, key: any) {
+    return new Observable<T>((observer) => {
+      this.get<T>(store, key).then((value) => {
+        observer.next(value);
+        observer.complete();
+      });
     });
   }
 

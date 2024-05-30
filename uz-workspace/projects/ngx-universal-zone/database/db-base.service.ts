@@ -28,7 +28,7 @@ export abstract class DbService {
     return;
   }
 
-  putAllLocal(store: string, opts: any): Promise<any> {
+  putLocalRx(store, data): Observable<any> {
     // @ts-ignore
     return;
   }
@@ -37,6 +37,11 @@ export abstract class DbService {
     // @ts-ignore
     return;
   }
+  getRx<T>(store: string, key: any): Observable<T> { 
+    // @ts-ignore
+    return; 
+  }
+
   getAll<T>(store: string): Promise<T> {
     // @ts-ignore
     return;
