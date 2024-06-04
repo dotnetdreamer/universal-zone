@@ -50,7 +50,7 @@ export class DbWebService extends Dexie implements DbService {
       )[0];
       const key = schema.columns.filter((s) => s.isPrimaryKey)[0];
 
-      const exist = await this.get(store, data[key.name]);
+      const exist = data[key.name] ? await this.get(store, data[key.name]) : null;
       if (exist) {
         //update
         this.db
@@ -77,7 +77,7 @@ export class DbWebService extends Dexie implements DbService {
       this.putLocal(store, data).then((result) => {
         observer.next(result);
         observer.complete();
-      });
+      }, (e) => observer.error(e));
     });
   }
 
@@ -88,7 +88,7 @@ export class DbWebService extends Dexie implements DbService {
         .get(key)
         .then((r) => {
           resolve(<T>r);
-        });
+        }, (e) => reject(e));
     });
   }
 
@@ -128,11 +128,18 @@ export class DbWebService extends Dexie implements DbService {
           }
         }
 
-        const data = <any>await collection.toArray();
-        resolve(<T>data);
-      } else {
-        this.db.table(store).toCollection;
       }
+      const data = <T>await collection.toArray();
+      resolve(data);
+    });
+  }
+
+  getAllRx<T>(store: string, opt?: DbFilter) {
+    return new Observable<T>((observer) => {
+      this.getAll<T>(store, opt).then((value) => {
+        observer.next(value);
+        observer.complete();
+      }, (e) => observer.error(e));
     });
   }
 

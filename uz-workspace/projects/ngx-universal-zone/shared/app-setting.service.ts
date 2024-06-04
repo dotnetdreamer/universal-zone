@@ -30,11 +30,11 @@ export class AppSettingService {
   }
 
   protected getRx<T>(key: string) {
-    return new Observable<T>((observer) => {
+    return new Observable<T>((obs) => {
       this.get<T>(key).then((setting) => {
-        observer.next(setting);
-        observer.complete();
-      });
+        obs.next(setting);
+        obs.complete(); 
+      }, (error) => obs.error(error));
     });
   }
 

@@ -32,6 +32,9 @@ export class DbSqliteService implements DbService {
         this._dbError(e);
       });
   }
+  getAllRx<T>(store: string): Observable<T> {
+    throw new Error('Method not implemented.');
+  }
 
   testDb() {
     this._db.transaction((tr) => {
