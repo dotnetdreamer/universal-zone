@@ -57,6 +57,11 @@ export abstract class DbService {
     return;
   }
 
+  removeRx(store, key): Observable<any> {
+    // @ts-ignore
+    return;
+  }
+
   removeAll(store): Promise<any> {
     // @ts-ignore
     return;

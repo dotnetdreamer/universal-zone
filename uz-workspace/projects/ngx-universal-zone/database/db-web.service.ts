@@ -1,7 +1,7 @@
 import { Injectable, Optional } from '@angular/core';
 
 import Dexie, { Collection, IndexableType, Table } from 'dexie';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, catchError, first, lastValueFrom, map, of, retry, timer } from 'rxjs';
 
 import { SchemaService } from './schema.service';
 import { DbService, DbServiceConfig } from './db-base.service';
@@ -83,7 +83,7 @@ export class DbWebService extends Dexie implements DbService {
 
   get<T>(store: string, key: any): Promise<T> {
     return new Promise((resolve, reject) => {
-      this.db
+        this.db
         .table(store)
         .get(key)
         .then((r) => {
@@ -145,6 +145,15 @@ export class DbWebService extends Dexie implements DbService {
 
   remove(store, key): Promise<any> {
     return this.db.table(store).delete(key);
+  }
+
+  removeRx(store, key): Observable<any> {
+    return new Observable((observer) => {
+      this.remove(store, key).then((result) => {
+        observer.next(result);
+        observer.complete();
+      }, (e) => observer.error(e));
+    });
   }
 
   async removeAll(store) {

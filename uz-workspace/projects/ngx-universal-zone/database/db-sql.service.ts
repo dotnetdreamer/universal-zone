@@ -186,6 +186,10 @@ export class DbSqliteService implements DbService {
     });
   }
 
+  removeRx(store, key): Observable<any> {
+    throw 'remove not impleted in db-sql yet';
+  }
+
   removeAll(store) {
     return new Promise((resolve, reject) => {
       throw 'removeAll not impleted in db-sql yet';
