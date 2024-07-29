@@ -27,6 +27,12 @@
       ],
       "ngx-universal-zone/pub-sub": [
         "./dist/ngx-universal-zone/pub-sub"
+      ],
+      "ngx-universal-zone/ui": [
+        "./dist/ngx-universal-zone/ui"
+      ],
+      "ngx-universal-zone/pipes": [
+        "./dist/ngx-universal-zone/pipes"
       ]
     },
     "lib": [
