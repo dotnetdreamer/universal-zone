@@ -94,7 +94,25 @@ If you are testing the library locall then also go to your app root tsconfig.jso
 ```
 "paths": {
   "@angular/*": ["./node_modules/@angular/*"],
+  "ngx-universal-zone/*":  ["./node_modules/ngx-universal-zone/*"],
 }
+```
+
+and in `angular.json` add `"preserveSymlinks": true` as shown below:
+
+```
+"architect": {
+  "build": {
+    "builder": "@angular-devkit/build-angular:application",
+    "options": {
+      "outputPath": "dist/web",
+      "index": "src/index.html",
+      "browser": "src/main.ts",
+      **"preserveSymlinks": true**,
+      "polyfills": [
+        "zone.js"
+      ],
+
 ```
 
 Now listen to dbinit and the rest do your magic!
