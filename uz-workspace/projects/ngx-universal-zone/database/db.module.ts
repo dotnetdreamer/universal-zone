@@ -6,7 +6,7 @@ import { DbWebService } from './db-web.service';
 import { DbService, DbServiceType } from './db-base.service';
 import { DbSqliteService } from './db-sql.service';
 
-export function DbFactory(schemaSvc: SchemaService) {
+export function dbFactory(schemaSvc: SchemaService) {
   const dbConfig = schemaSvc.config;
 
   switch (dbConfig.dbType) {
@@ -16,17 +16,21 @@ export function DbFactory(schemaSvc: SchemaService) {
       return new DbSqliteService(dbConfig, schemaSvc);
   }
 }
-
 @NgModule({
-  declarations: [],
   imports: [CommonModule],
-  providers: [
-    SchemaService, 
-    {
-      provide: DbService,
-      useFactory: DbFactory,
-      deps: [SchemaService],
-    }],
-  exports: [],
 })
-export class DbModule {}
+export class DbModule { 
+  static forRoot() {
+    return {
+      ngModule: DbModule,
+      providers: [ 
+        SchemaService,
+        {
+          provide: DbService,
+          useFactory: dbFactory,
+          deps: [SchemaService],
+        }
+       ]
+    }
+  }
+}

@@ -93,7 +93,6 @@ If you are testing the library locall then also go to your app root tsconfig.jso
 
 ```
 "paths": {
-  "@angular/*": ["./node_modules/@angular/*"],
   "ngx-universal-zone/*":  ["./node_modules/ngx-universal-zone/*"],
 }
 ```
@@ -108,7 +107,7 @@ and in `angular.json` add `"preserveSymlinks": true` as shown below:
       "outputPath": "dist/web",
       "index": "src/index.html",
       "browser": "src/main.ts",
-      **"preserveSymlinks": true**,
+      **"preserveSymlinks": true**, //This might not be needed. Only add if needed
       "polyfills": [
         "zone.js"
       ],
