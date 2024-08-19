@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { ModuleWithProviders, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { SchemaService } from './schema.service';
@@ -20,7 +20,7 @@ export function dbFactory(schemaSvc: SchemaService) {
   imports: [CommonModule],
 })
 export class DbModule { 
-  static forRoot() {
+  static forRoot(): ModuleWithProviders<DbModule> {
     return {
       ngModule: DbModule,
       providers: [ 

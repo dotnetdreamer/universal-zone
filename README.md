@@ -67,8 +67,8 @@ function initializeDb(schemaSvc: SchemaService) {
     BrowserModule,
     HttpClientModule,
     IonicModule.forRoot(),
-    UniversalZoneModule,
-    DbModule
+    UniversalZoneModule.forRoot(),
+    DbModule.forRoot()
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

@@ -1,18 +1,25 @@
 import { CommonModule } from "@angular/common";
-import { NgModule } from "@angular/core";
+import { Injector, ModuleWithProviders, NgModule, Provider } from "@angular/core";
 
 import { AppSettingService } from "./app-setting.service";
-import { DbModule } from "../database";
 import { HelperService } from "./helper.service";
+import { AppInjector } from "./app-injector";
 
 @NgModule({
-    imports: [CommonModule, DbModule],
-  })
-  export class UniversalZoneModule {
-    static forRoot() {
-      return {
-        ngModule: UniversalZoneModule,
-        providers: [ AppSettingService, HelperService ]
-      }
+    imports: [CommonModule],
+})
+export class UniversalZoneModule {
+  static forRoot(config?: UniversalZoneModuleConfig): ModuleWithProviders<UniversalZoneModule> {
+    return {
+      ngModule: UniversalZoneModule,
+      providers: [ AppSettingService, HelperService ]
     }
   }
+}
+export interface UniversalZoneModuleConfig {
+}
+
+
+
+
+
