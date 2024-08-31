@@ -1,10 +1,8 @@
 import { CommonModule } from "@angular/common";
-import { Injector, ModuleWithProviders, NgModule, Provider } from "@angular/core";
+import { ModuleWithProviders, NgModule } from "@angular/core";
 
 import { AppSettingService } from "./app-setting.service";
 import { HelperService } from "./helper.service";
-import { AppInjector } from "./app-injector";
-
 @NgModule({
     imports: [CommonModule],
 })
