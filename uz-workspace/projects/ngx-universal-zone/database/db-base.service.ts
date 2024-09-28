@@ -76,4 +76,9 @@ export abstract class DbService {
     // @ts-ignore
     return;
   }
+
+  deleteTable(store): Observable<void> {
+    // @ts-ignore
+    return;
+  }
 }

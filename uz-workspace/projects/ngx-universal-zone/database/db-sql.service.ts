@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { Observable, Subject } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 // import * as CapacitorSQLPlugin from 'capacitor-sqlite';
 
 import { SchemaService, ITableOptions } from './schema.service';
@@ -207,6 +207,11 @@ export class DbSqliteService implements DbService {
 
   deleteDb() {
     return this._deleteDatabase();
+  }
+
+  
+  deleteTable(store): Observable<void> {
+    throw 'deleteTable not impleted in db-sql yet';
   }
 
   private _prepareTables() {
