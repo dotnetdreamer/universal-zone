@@ -188,6 +188,15 @@ export class DbWebService extends Dexie implements DbService {
       resolve(null);
     });
   }
+
+  deleteTable(store) {
+    return new Observable<void>((observer) => {
+      this.db.table(store).clear().then((result) => {
+        observer.next(result);
+        observer.complete();
+      }, (e) => observer.error(e));
+    });
+  }
 }
 
 export interface DbFilter {
