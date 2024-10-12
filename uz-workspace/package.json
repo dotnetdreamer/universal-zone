@@ -4,8 +4,12 @@
   "scripts": {
     "ng": "ng",
     "start": "npm run watch",
-    "build": "ng build ngx-universal-zone --configuration production",
-    "watch": "ng build ngx-universal-zone --configuration development --watch",
+    "build:ionic": "ng build ngx-ionic-zone --configuration production",
+    "watch:ionic": "ng build ngx-ionic-zone --configuration development --watch",
+    "build:uz": "ng build ngx-universal-zone --configuration production",
+    "watch:uz": "ng build ngx-universal-zone --configuration development --watch",
+    "watch": "npm run watch:uz && npm run watch:ionic",
+    "build": "npm run build:uz && npm run build:ionic",
     "test": "ng test"
   },
   "private": true,

@@ -19,6 +19,9 @@
     "module": "ES2022",
     "useDefineForClassFields": false,
     "paths": {
+      "ngx-ionic-zone": [
+        "./dist/ngx-ionic-zone"
+      ],
       "ngx-universal-zone": [
         "./dist/ngx-universal-zone"
       ],
