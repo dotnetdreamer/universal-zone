@@ -1,21 +1,22 @@
-import { Injectable } from "@angular/core";
+import { Inject, Injectable } from "@angular/core";
+
 import { BehaviorSubject, catchError, distinctUntilChanged, Observable, of, shareReplay, Subject, switchMap, takeUntil, tap, timer } from "rxjs";
 import { Network } from "@capacitor/network";
-import { BaseService } from "./base.service";
+
+import { APP_CONFIG_TOKEN, BaseService, IAppConfig } from "ngx-ionic-zone";
 
 @Injectable({
-  providedIn: "root",
+  providedIn: 'root'
 })
 export class NetworkService extends BaseService {
   private _serverAvailableSubject = new BehaviorSubject<boolean>(true);
   private ngDestroy = new Subject<void>();
-  private _interval = 3000;
   
   connected$: Observable<boolean>;
   statusSubject = new BehaviorSubject<boolean>(true);
   serverAvailable$ = this._serverAvailableSubject.asObservable().pipe(distinctUntilChanged());
 
-  constructor() {
+  constructor(@Inject(APP_CONFIG_TOKEN) private appConfig: IAppConfig) {
     super();
 
     Network.getStatus().then((status) =>
@@ -32,7 +33,7 @@ export class NetworkService extends BaseService {
 
   ping() {
     return this.getDataRx<boolean>({
-      url: `ping`
+      url: this.appConfig.ping?.url || 'ping',
     });
   }
 
@@ -43,7 +44,7 @@ export class NetworkService extends BaseService {
 
   public startPingingServer() {
     const callBack = () => {
-      const obs$ = timer(0, this._interval).pipe(
+      const obs$ = timer(0, this.appConfig.ping?.interval || 3000).pipe(
         switchMap(() => this.ping().pipe(
           tap(() => {
             this._serverAvailableSubject.next(true);

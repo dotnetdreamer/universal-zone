@@ -1,25 +1,30 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 
-import { CapacitorHttp } from '@capacitor/core';
+// import { CapacitorHttp } from '@capacitor/core';
 
-import { AppConstant } from './app-constant';
 import { Observable } from 'rxjs';
+import { APP_CONFIG_TOKEN, IAppConfig } from './app-config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BaseService {
-  protected http: HttpClient;
+  private config: IAppConfig;
 
+  protected http: HttpClient;
+  
   constructor() {
     this.http = inject(HttpClient);
+    this.config = inject(APP_CONFIG_TOKEN);
   }
 
   protected getDataRx<T>(args: HttpParams) {
+    if (!args.overrideUrl) {
+      args.url = `${this.config.baseApiUrl + args.url}`;
+    }
       args.body = args.body || {};
 
-      args.url = `${AppConstant.BASE_API_URL + args.url}`;
       for (let prop in args.body) {
         if (args.body.hasOwnProperty(prop) && args.body[prop]) {
           if (args.url.includes('?')) {
@@ -48,7 +53,7 @@ export class BaseService {
   protected postDataRx<T>(args: HttpParams){
     let newUrl;
     if (!args.overrideUrl) {
-      newUrl = `${AppConstant.BASE_API_URL + args.url}`;
+      newUrl = `${this.config.baseApiUrl + args.url}`;
     } else {
       newUrl = args.url;
     }
@@ -60,9 +65,6 @@ export class BaseService {
   }
 
   protected async handleError(e: HttpErrorResponse, args: HttpParams) {
-    if (AppConstant.DEBUG) {
-      console.log('BaseService: handleError', e);
-    }
     switch (e.status) {
       // case 401:
       //     const u = await this.userSettingSvc.getCurrentUser();

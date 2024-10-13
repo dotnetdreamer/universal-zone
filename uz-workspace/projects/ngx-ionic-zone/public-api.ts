@@ -3,3 +3,5 @@
  */
 
 export * from './shared/base.service';
+export * from './shared/uz-ionic.module';
+export * from './shared/app-config';
