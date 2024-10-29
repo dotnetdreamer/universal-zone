@@ -6,9 +6,14 @@ export interface IAppConfig {
     baseUrl: string;
     baseApiUrl: string;
     ping?: IAppConfigPing;
+    http?: IAppConfigHttp;
 }
 
 export interface IAppConfigPing {
     url: string;
     interval: number;
+}
+
+export interface IAppConfigHttp {
+    useNativeHttp: boolean;
 }

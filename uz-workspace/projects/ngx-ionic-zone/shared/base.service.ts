@@ -36,6 +36,16 @@ export class BaseService {
         }
       }
 
+      // if(!this.config.http?.useNativeHttp) {
+        let headers = new HttpHeaders();
+        for (let prop in args.headers) {
+          if (args.headers.hasOwnProperty(prop) && args.headers[prop]) {
+            headers = headers.set(prop, args.headers[prop]);
+          }
+        }
+        return this.http.get<T>(args.url, { headers: headers });
+      // }
+      
       // return new Observable<T>((observer) => {
       //   CapacitorHttp.get({
       //     url: args.url,
@@ -47,7 +57,6 @@ export class BaseService {
       //     observer.error(error);
       //   });
       // });
-      return this.http.get<T>(args.url, { headers: args.headers });
   }
 
   protected postDataRx<T>(args: HttpParams){
@@ -61,7 +70,7 @@ export class BaseService {
     args.url = newUrl;
 
     let body = args.body;
-    return this.http.post<T>(args.url, body, { headers: args.headers });
+    return this.http.post<T>(args.url, body, { headers: new HttpHeaders(args.headers) });
   }
 
   protected async handleError(e: HttpErrorResponse, args: HttpParams) {
