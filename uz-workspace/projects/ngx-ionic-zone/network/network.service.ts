@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@angular/core";
 
-import { BehaviorSubject, catchError, distinctUntilChanged, Observable, of, shareReplay, Subject, switchMap, takeUntil, tap, timer } from "rxjs";
+import { BehaviorSubject, catchError, distinctUntilChanged, EMPTY, Observable, of, shareReplay, Subject, switchMap, takeUntil, tap, timer } from "rxjs";
 import { Network } from "@capacitor/network";
 
 import { APP_CONFIG_TOKEN, BaseService, IAppConfig } from "ngx-ionic-zone";
@@ -10,6 +10,8 @@ import { APP_CONFIG_TOKEN, BaseService, IAppConfig } from "ngx-ionic-zone";
 })
 export class NetworkService extends BaseService {
   private _serverAvailableSubject = new BehaviorSubject<boolean>(true);
+  private _pingRunning = new BehaviorSubject(true);
+  private _isPingRunning = true;
   private ngDestroy = new Subject<void>();
   
   connected$: Observable<boolean>;
@@ -45,23 +47,16 @@ export class NetworkService extends BaseService {
   public startPingingServer() {
     const callBack = () => {
       const obs$ = timer(0, this.appConfig.ping?.interval || 3000).pipe(
-        switchMap(() => this.ping().pipe(
+        switchMap(() => this._pingRunning.pipe(
+          switchMap(isRunning => isRunning ? this.ping() : EMPTY),
           tap(() => {
             this._serverAvailableSubject.next(true);
           }),
-          // tap(() => console.log('Successfully retrieved.')),
           catchError(error => {
-            // console.log('Could not retrieve the supported functions. More info: ', error);
             this._serverAvailableSubject.next(false);
             return of(error); // Continue the interval even after an error
           })
         )),
-        // retryWhen(errors =>
-        //   errors.pipe(
-        //     tap(() => console.log('retrying')),
-        //     delayWhen(() => timer(this.interval / 2))
-        //   )
-        // ),
         shareReplay({ bufferSize: 1, refCount: true }),
         takeUntil(this.ngDestroy)
       );
@@ -71,25 +66,23 @@ export class NetworkService extends BaseService {
         error: e => console.log('There was an error when pinging server', e),
       });
     };
-    /**
-     * important: Currently if there is a delay in the retrieval of the supported functions then
-     * Angular change detection will wait untill 10 seconds to be able to detect the changes.
-     * So we for now we are skipping that during regression tests. We need to see if this is a problem
-     * also in the production environment, then we can remove the if statement and always run the callback
-    */
-    // if(environment.regressionTests) {
-    //   this.ngZone.run(callBack);
-    // } else {
-      // this.ngZone.runOutsideAngular(callBack);
-      return callBack();
-    // }
+    
+    return callBack();
+  }
 
+  pausePinging() {
+    if (this._isPingRunning) {
+      this._isPingRunning = false;
+      this._pingRunning.next(false);
+      console.log('Pinging paused.');
+    }
+  }
 
-    // ATTENTION: returning this observable does not mean that subscriving to it will mean retrieving all the
-    // emitted values, only one (the current one) will be returned.
-    // Better would be to emit every value through
-    // this observable. However, since there are plans to stop retrieving the supported functions every secs
-    // this change might never come into place.
-    // return supportedFunctions$;
+  resumePinging() {
+    if (!this._isPingRunning) {
+      this._isPingRunning = true;
+      this._pingRunning.next(true);
+      console.log('Pinging resumed.');
+    }
   }
 }
