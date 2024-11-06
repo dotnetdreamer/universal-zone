@@ -3,6 +3,7 @@
 import { Observable } from "rxjs";
 
 import { ITableOptions } from "./schema.service";
+import { DbFilter } from "./db-web.service";
 
 export class DbServiceConfig {
   dbType!: DbServiceType;
@@ -42,12 +43,12 @@ export abstract class DbService {
     return; 
   }
 
-  getAll<T>(store: string): Promise<T> {
+  getAll<T>(store: string, opt?: DbFilter): Promise<T> {
     // @ts-ignore
     return;
   }
 
-  getAllRx<T>(store: string): Observable<T> {
+  getAllRx<T>(store: string, opt?: DbFilter): Observable<T> {
     // @ts-ignore
     return;
   }

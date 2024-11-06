@@ -127,8 +127,16 @@ export class DbWebService extends Dexie implements DbService {
               break;
           }
         }
-
       }
+
+      if(opt?.pageIndex != null) {
+        collection = collection.offset((opt.pageIndex - 1) * opt.pageSize);
+      }
+
+      if(opt?.pageSize != null) {
+        collection = collection.limit(opt.pageSize)
+      }
+
       const data = <T>await collection.toArray();
       resolve(data);
     });
@@ -201,8 +209,10 @@ export class DbWebService extends Dexie implements DbService {
 
 export interface DbFilter {
   key?: any;
-  value: any;
+  value?: any;
   keyRange?: KeyRangeType;
+  pageIndex?: number;
+  pageSize?: number;
 }
 
 export enum KeyRangeType {

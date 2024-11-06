@@ -5,6 +5,7 @@ import { Observable, of, Subject } from 'rxjs';
 
 import { SchemaService, ITableOptions } from './schema.service';
 import { DbService, DbServiceConfig } from './db-base.service';
+import { DbFilter } from './db-web.service';
 
 @Injectable()
 export class DbSqliteService implements DbService {
@@ -32,7 +33,7 @@ export class DbSqliteService implements DbService {
         this._dbError(e);
       });
   }
-  getAllRx<T>(store: string): Observable<T> {
+  getAllRx<T>(store: string, opt?: DbFilter): Observable<T> {
     throw new Error('Method not implemented.');
   }
 
@@ -166,7 +167,7 @@ export class DbSqliteService implements DbService {
     return; 
   }
 
-  getAll<T>(store: string): Promise<T> {
+  getAll<T>(store: string, opt?: DbFilter): Promise<T> {
     return new Promise(async (resolve, reject) => {
       let sql = `SELECT * FROM ${store}`;
 
