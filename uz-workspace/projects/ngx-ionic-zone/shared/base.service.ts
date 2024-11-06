@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpErrorResponse, HttpContext, HttpContextToken } from '@angular/common/http';
 
 // import { CapacitorHttp } from '@capacitor/core';
 
@@ -43,7 +43,17 @@ export class BaseService {
             headers = headers.set(prop, args.headers[prop]);
           }
         }
-        return this.http.get<T>(args.url, { headers: headers });
+
+        let context = new HttpContext();
+        if(args.retryCount != null) {
+          context.set(RETRY_COUNT, args.retryCount);
+        }
+        
+        if(args.retryDelay != null) {
+          context.set(RETRY_DELAY, args.retryCount);
+        }
+        
+        return this.http.get<T>(args.url, { headers: headers, context: context });
       // }
       
       // return new Observable<T>((observer) => {
@@ -68,6 +78,15 @@ export class BaseService {
     }
 
     args.url = newUrl;
+
+    let context = new HttpContext();
+    if(args.retryCount != null) {
+      context.set(RETRY_COUNT, args.retryCount);
+    }
+
+    if(args.retryDelay != null) {
+      context.set(RETRY_DELAY, args.retryCount);
+    }
 
     let body = args.body;
     return this.http.post<T>(args.url, body, { headers: new HttpHeaders(args.headers) });
@@ -110,6 +129,8 @@ export interface HttpParams {
   ignoreContentType?: boolean;
   overrideUrl?: boolean;
   headers?: { [key: string]: string };
+  retryCount?: number;
+  retryDelay?: number;
 }
 
 export interface ApiResponse<T> {
@@ -118,3 +139,7 @@ export interface ApiResponse<T> {
   data: T;
   exception: any;
 }
+
+
+export const RETRY_COUNT = new HttpContextToken(() => 3);
+export const RETRY_DELAY = new HttpContextToken(() => 5000);

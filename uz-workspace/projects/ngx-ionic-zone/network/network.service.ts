@@ -36,6 +36,7 @@ export class NetworkService extends BaseService {
   ping() {
     return this.getDataRx<boolean>({
       url: this.appConfig.ping?.url || 'ping',
+      retryCount: 0 //Do not retry
     });
   }
 
