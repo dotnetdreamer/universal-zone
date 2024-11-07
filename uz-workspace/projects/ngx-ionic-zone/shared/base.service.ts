@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse, HttpContext, HttpContextTok
 
 // import { CapacitorHttp } from '@capacitor/core';
 
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, catchError, Observable, tap, throwError } from 'rxjs';
 import { APP_CONFIG_TOKEN, IAppConfig } from './app-config';
 
 @Injectable({
@@ -59,7 +59,14 @@ export class BaseService {
         }
         
         return this.http.get<T>(args.url, { headers: headers, context: context })
-          .pipe(tap(() => this._httpInProgressRequest.next(null)));
+          .pipe(
+            tap(() => this._httpInProgressRequest.next(null)),
+            catchError((error) => {
+              this._httpInProgressRequest.next(null);
+    
+              //pass error to the caller
+              return throwError(() => error);
+            }));
       // }
       
       // return new Observable<T>((observer) => {
@@ -98,7 +105,15 @@ export class BaseService {
 
     let body = args.body;
     return this.http.post<T>(args.url, body, { headers: new HttpHeaders(args.headers), context: context })
-      .pipe(tap(() => this._httpInProgressRequest.next(null)));
+      .pipe(
+        tap(() => this._httpInProgressRequest.next(null)),
+        catchError((error) => {
+          this._httpInProgressRequest.next(null);
+
+          //pass error to the caller
+          return throwError(() => error);
+        })
+      );
   }
 
   protected async handleError(e: HttpErrorResponse, args: HttpParams) {
