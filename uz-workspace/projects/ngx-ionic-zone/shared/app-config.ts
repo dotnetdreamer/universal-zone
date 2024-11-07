@@ -10,7 +10,7 @@ export interface IAppConfig {
 }
 
 export interface IAppConfigPing {
-    url: string;
+    url?: string;
     interval: number;
 }
 

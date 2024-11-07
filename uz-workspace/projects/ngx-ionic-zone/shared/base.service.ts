@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse, HttpContext, HttpContextTok
 
 // import { CapacitorHttp } from '@capacitor/core';
 
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { APP_CONFIG_TOKEN, IAppConfig } from './app-config';
 
 @Injectable({
@@ -11,15 +11,20 @@ import { APP_CONFIG_TOKEN, IAppConfig } from './app-config';
 })
 export class BaseService {
   private config: IAppConfig;
+  private _httpInProgressRequest = new BehaviorSubject<HttpParams>(null);
 
   protected http: HttpClient;
-  
+
+  httpInProgressRequest$ = this._httpInProgressRequest.asObservable();
+
   constructor() {
     this.http = inject(HttpClient);
     this.config = inject(APP_CONFIG_TOKEN);
   }
 
   protected getDataRx<T>(args: HttpParams) {
+    this._httpInProgressRequest.next(args);
+
     if (!args.overrideUrl) {
       args.url = `${this.config.baseApiUrl + args.url}`;
     }
@@ -53,7 +58,8 @@ export class BaseService {
           context.set(RETRY_DELAY, args.retryCount);
         }
         
-        return this.http.get<T>(args.url, { headers: headers, context: context });
+        return this.http.get<T>(args.url, { headers: headers, context: context })
+          .pipe(tap(() => this._httpInProgressRequest.next(null)));
       // }
       
       // return new Observable<T>((observer) => {
@@ -69,7 +75,9 @@ export class BaseService {
       // });
   }
 
-  protected postDataRx<T>(args: HttpParams){
+  protected postDataRx<T>(args: HttpParams) {
+    this._httpInProgressRequest.next(args);
+
     let newUrl;
     if (!args.overrideUrl) {
       newUrl = `${this.config.baseApiUrl + args.url}`;
@@ -89,7 +97,8 @@ export class BaseService {
     }
 
     let body = args.body;
-    return this.http.post<T>(args.url, body, { headers: new HttpHeaders(args.headers) });
+    return this.http.post<T>(args.url, body, { headers: new HttpHeaders(args.headers), context: context })
+      .pipe(tap(() => this._httpInProgressRequest.next(null)));
   }
 
   protected async handleError(e: HttpErrorResponse, args: HttpParams) {
@@ -123,7 +132,7 @@ export class BaseService {
 }
 
 export interface HttpParams {
-  url: any;
+  url: string;
   body?: any;
   errorCallback?;
   ignoreContentType?: boolean;
