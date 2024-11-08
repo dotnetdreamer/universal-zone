@@ -10,10 +10,10 @@ import { APP_CONFIG_TOKEN, IAppConfig } from './app-config';
   providedIn: 'root',
 })
 export class BaseService {
-  private config: IAppConfig;
   private _httpInProgressRequest = new BehaviorSubject<HttpParams>(null);
 
   protected http: HttpClient;
+  protected config: IAppConfig;
 
   httpInProgressRequest$ = this._httpInProgressRequest.asObservable();
 

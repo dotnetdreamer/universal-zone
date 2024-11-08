@@ -49,12 +49,30 @@ export class AppSettingService {
       });
   }
 
+  protected putRx(key: string, values) {
+    return new Observable<void>((obs) => {
+      this.put(key, values).then(() => {
+        obs.next();
+        obs.complete(); 
+      }, (error) => obs.error(error));
+    });
+  }
+
   protected remove(key: string) {
     return this._dbService
       .remove(this._schemaSvc.tables[DbSettingConstant.SETTING], key)
       .then(() => {
         AppSettingService.settingCache.delete(key);
       });
+  }
+
+  protected removeRx(key: string) {
+    return new Observable<void>((obs) => {
+      this.remove(key).then(() => {
+        obs.next();
+        obs.complete(); 
+      }, (error) => obs.error(error));
+    });
   }
 
   protected removeCache(key: string) {
