@@ -190,6 +190,15 @@ export class DbWebService extends Dexie implements DbService {
     return this.db.table(store).count();
   }
 
+  countRx(store, opts?: { key }) {
+    return new Observable<number>((observer) => {
+      this.count(store, opts).then((value) => {
+        observer.next(value);
+        observer.complete();
+      }, (e) => observer.error(e));
+    });
+  }
+
   deleteDb() {
     return new Promise(async (resolve, reject) => {
       await this.db.delete();

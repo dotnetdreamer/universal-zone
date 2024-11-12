@@ -73,6 +73,11 @@ export abstract class DbService {
     return;
   }
 
+  countRx(store, opts?: { key }): Observable<number> {
+    // @ts-ignore
+    return;
+  }
+
   deleteDb(): Promise<any> {
     // @ts-ignore
     return;

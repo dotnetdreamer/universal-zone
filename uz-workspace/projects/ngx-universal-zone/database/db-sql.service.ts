@@ -206,6 +206,15 @@ export class DbSqliteService implements DbService {
     });
   }
 
+  countRx(store, opts?: { key }) {
+    return new Observable<number>((observer) => {
+      this.count(store, opts).then((result) => {
+        observer.next(result);
+        observer.complete();
+      }, (error) => observer.error(error));
+    });
+  }
+
   deleteDb() {
     return this._deleteDatabase();
   }
