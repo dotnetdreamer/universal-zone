@@ -8,7 +8,7 @@ import { DbService, DbServiceConfig } from './db-base.service';
 
 @Injectable()
 export class DbWebService extends Dexie implements DbService {
-  private db!: Dexie;
+  private _db!: Dexie;
   private dbInitialized = new Subject<any>();
 
   constructor(
@@ -30,7 +30,7 @@ export class DbWebService extends Dexie implements DbService {
     this.version(1).stores(schema);
     this.open()
       .then((d) => {
-        this.db = d;
+        this._db = d;
 
         this.dbInitialized.next(d);
       })
@@ -40,7 +40,7 @@ export class DbWebService extends Dexie implements DbService {
   dbInitialized$ = this.dbInitialized.asObservable();
 
   get Db() {
-    return this.db;
+    return this._db;
   }
 
   putLocal(store, data): Promise<{ rowsAffected; insertId }> {
@@ -53,7 +53,7 @@ export class DbWebService extends Dexie implements DbService {
       const exist = data[key.name] ? await this.get(store, data[key.name]) : null;
       if (exist) {
         //update
-        this.db
+        this.Db
           .table(store)
           .update(data[key.name], data)
           .then(
@@ -61,7 +61,7 @@ export class DbWebService extends Dexie implements DbService {
             (e) => reject(e)
           );
       } else {
-        this.db
+        this.Db
           .table(store)
           .add(data)
           .then(
@@ -83,7 +83,11 @@ export class DbWebService extends Dexie implements DbService {
 
   get<T>(store: string, key: any): Promise<T> {
     return new Promise((resolve, reject) => {
-        this.db
+      if(!this.Db) {
+        return reject('Database not initialized. Please wait for dbInitialized$ to emit.');
+      }
+      
+        this.Db
         .table(store)
         .get(key)
         .then((r) => {
@@ -104,23 +108,27 @@ export class DbWebService extends Dexie implements DbService {
   getByFieldName<T>(storeName, fieldName, key): Promise<Array<T>> {
     const filter = {};
     filter[fieldName] = key;
-    return this.db.table(storeName).where(filter).toArray();
+    return this.Db.table(storeName).where(filter).toArray();
   }
 
   getAll<T>(store: string, opt?: DbFilter): Promise<T> {
     return new Promise(async (resolve, reject) => {
-      let collection = this.db.table(store).toCollection();
+      if(!this.Db) {
+        return reject('Database not initialized. Please wait for dbInitialized$ to emit.');
+      }
+
+      let collection = this.Db.table(store).toCollection();
       if (opt && opt.key && opt.value) {
         if (opt.keyRange) {
           switch (opt.keyRange) {
             case KeyRangeType.equalto:
-              collection = this.db
+              collection = this.Db
                 .table(store)
                 .where(opt.key)
                 .equalsIgnoreCase(opt.value);
               break;
             case KeyRangeType.startsWith:
-              collection = this.db
+              collection = this.Db
                 .table(store)
                 .where(opt.key)
                 .startsWithIgnoreCase(opt.value);
@@ -152,7 +160,7 @@ export class DbWebService extends Dexie implements DbService {
   }
 
   remove(store, key): Promise<any> {
-    return this.db.table(store).delete(key);
+    return this.Db.table(store).delete(key);
   }
 
   removeRx(store, key): Observable<any> {
@@ -173,7 +181,7 @@ export class DbWebService extends Dexie implements DbService {
 
     const promises: any = [];
     for (let r of all) {
-      promises.push(this.db.table(store).delete(key.name));
+      promises.push(this.Db.table(store).delete(key.name));
     }
 
     await Promise.all(promises);
@@ -184,10 +192,10 @@ export class DbWebService extends Dexie implements DbService {
       const pk = this.schemaService.schema.stores
         .filter((s) => s.name == store)[0]
         .columns.filter((s) => s.isPrimaryKey)[0];
-      return this.db.table(store).where(pk.name).equals(opts.key).count();
+      return this.Db.table(store).where(pk.name).equals(opts.key).count();
     }
 
-    return this.db.table(store).count();
+    return this.Db.table(store).count();
   }
 
   countRx(store, opts?: { key }) {
@@ -201,14 +209,14 @@ export class DbWebService extends Dexie implements DbService {
 
   deleteDb() {
     return new Promise(async (resolve, reject) => {
-      await this.db.delete();
+      await this.Db.delete();
       resolve(null);
     });
   }
 
   deleteTable(store) {
     return new Observable<void>((observer) => {
-      this.db.table(store).clear().then((result) => {
+      this.Db.table(store).clear().then((result) => {
         observer.next(result);
         observer.complete();
       }, (e) => observer.error(e));
