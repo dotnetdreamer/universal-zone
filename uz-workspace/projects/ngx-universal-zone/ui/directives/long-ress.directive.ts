@@ -10,6 +10,7 @@ import { mapTo, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 @Directive({
   selector: '[longPress]',
+  standalone: false,
 })
 export class LongPressDirective {
   @Input('longPress')

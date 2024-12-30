@@ -24,6 +24,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
     `,
   ],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class NoDataComponent implements OnInit {
   icon = input<string>();

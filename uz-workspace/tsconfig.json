@@ -39,6 +39,9 @@
       ],
       "ngx-universal-zone/pipes": [
         "./dist/ngx-universal-zone/pipes"
+      ],
+      "ngx-universal-zone/components": [
+        "./dist/ngx-ionic-zone/components"
       ]
     },
     "lib": [

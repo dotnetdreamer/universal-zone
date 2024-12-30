@@ -1,12 +1,12 @@
-import { Injectable, Optional } from '@angular/core';
+import { Injectable } from '@angular/core';
 
-import Dexie, { Collection, IndexableType, Table } from 'dexie';
-import { Observable, Subject, catchError, first, lastValueFrom, map, of, retry, timer } from 'rxjs';
+import Dexie, { IndexableType } from 'dexie';
+import { Observable, Subject } from 'rxjs';
 
 import { SchemaService } from './schema.service';
 import { DbService, DbServiceConfig } from './db-base.service';
 
-@Injectable()
+// @Injectable()
 export class DbWebService extends Dexie implements DbService {
   private _db!: Dexie;
   private dbInitialized = new Subject<any>();
@@ -117,7 +117,18 @@ export class DbWebService extends Dexie implements DbService {
         return reject('Database not initialized. Please wait for dbInitialized$ to emit.');
       }
 
-      let collection = this.Db.table(store).toCollection();
+      let table = this.Db.table(store);
+      let collection = table.toCollection();
+
+      if(opt?.sortBy) {
+        collection = table.orderBy(opt.sortBy);
+      }
+
+      if(opt?.sortType && opt?.sortType == 'desc') {
+        collection = table.reverse();
+      }
+
+      // collection = this.Db.table(store).toCollection();
       if (opt && opt.key && opt.value) {
         if (opt.keyRange) {
           switch (opt.keyRange) {
@@ -144,6 +155,17 @@ export class DbWebService extends Dexie implements DbService {
       if(opt?.pageSize != null) {
         collection = collection.limit(opt.pageSize)
       }
+
+      // let data!: T;
+      // if(opt?.sortBy) {
+      //   data = <T>await collection.sortBy(opt.sortBy);
+      // } else {
+      //   data = <T>await collection.toArray();
+      // }
+
+      // if(opt.sortType == 'desc') {
+      //   data = <T>(<any[]>data).reverse();
+      // }
 
       const data = <T>await collection.toArray();
       resolve(data);
@@ -230,6 +252,8 @@ export interface DbFilter {
   keyRange?: KeyRangeType;
   pageIndex?: number;
   pageSize?: number;
+  sortBy?: any;
+  sortType?: 'asc' | 'desc';
 }
 
 export enum KeyRangeType {
