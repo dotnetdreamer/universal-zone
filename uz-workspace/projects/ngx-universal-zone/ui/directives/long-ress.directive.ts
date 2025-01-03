@@ -1,18 +1,28 @@
 import {
   Directive,
+  ElementRef,
   EventEmitter,
   HostListener,
   Input,
   Output,
 } from '@angular/core';
-import { interval, Subscription, timer } from 'rxjs';
-import { mapTo, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { combineLatest, interval, merge, Subscription, timer } from 'rxjs';
+import { map, mapTo, repeat, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 @Directive({
   selector: '[longPress]',
   standalone: false,
 })
 export class LongPressDirective {
+  constructor(private elRef: ElementRef) {
+    merge(this.longPressCancel, this.longPressFinish).pipe(
+      tap(() => {
+        const ref = this.elRef.nativeElement as HTMLElement;
+        ref.style.transform = 'scale(1)';
+      })
+    ).subscribe();
+  }
+
   @Input('longPress')
   set duration(v: number | string) {
     this._duration = v ? Number(v) : 3000;
@@ -47,16 +57,21 @@ export class LongPressDirective {
       return;
     }
 
+    const ref = this.elRef.nativeElement as HTMLElement;
+    ref.style.transform = 'scale(0.95)';
+
     this.pressing = true;
     this.longPressStart.emit(event);
 
-    let obs = timer(this._duration).pipe(mapTo(event));
-
+    let obs = timer(this._duration).pipe(map(() => event));
     if (this.isContinuous) {
       obs = obs.pipe(
         tap((event: MouseEvent | TouchEvent) => this.longPressFinish.emit(event)),
         switchMap((event) =>
-          interval(this.continuousInterval).pipe(mapTo(event))
+          interval(this.continuousInterval)
+          .pipe(
+            map(() => event)
+          )
         ),
         takeUntil(this.longPressCancel)
       );

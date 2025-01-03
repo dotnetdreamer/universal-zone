@@ -130,21 +130,29 @@ export class DbWebService extends Dexie implements DbService {
 
       // collection = this.Db.table(store).toCollection();
       if (opt && opt.key && opt.value) {
-        if (opt.keyRange) {
-          switch (opt.keyRange) {
-            case KeyRangeType.equalto:
+        if(!opt.keyRange) {
+          opt.keyRange = KeyRangeType.equalTo;
+        }
+
+        switch (opt.keyRange) {
+          case KeyRangeType.startsWithIgnoreCase:
+            collection = this.Db
+              .table(store)
+              .where(opt.key)
+              .startsWithIgnoreCase(opt.value);
+            break;
+            case KeyRangeType.equalTo:
+              collection = this.Db
+                .table(store)
+                .where(opt.key)
+                .equals(opt.value);
+              break;
+            case KeyRangeType.equalToIgnoreCase:
               collection = this.Db
                 .table(store)
                 .where(opt.key)
                 .equalsIgnoreCase(opt.value);
               break;
-            case KeyRangeType.startsWith:
-              collection = this.Db
-                .table(store)
-                .where(opt.key)
-                .startsWithIgnoreCase(opt.value);
-              break;
-          }
         }
       }
 
@@ -257,6 +265,7 @@ export interface DbFilter {
 }
 
 export enum KeyRangeType {
-  equalto = 1,
-  startsWith = 2,
+  equalToIgnoreCase = 1,
+  startsWithIgnoreCase = 2,
+  equalTo = 3,
 }

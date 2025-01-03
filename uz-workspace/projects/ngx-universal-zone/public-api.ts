@@ -9,3 +9,4 @@ export * from './shared/app-setting.service';
 export * from './shared/helper.service';
 
 export * from './shared/universal-zone.module';
+export * from './shared/message-bus';

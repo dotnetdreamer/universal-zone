@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse, HttpContext, HttpContextTok
 
 // import { CapacitorHttp } from '@capacitor/core';
 
-import { BehaviorSubject, catchError, Observable, tap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, tap, throwError } from 'rxjs';
 import { APP_CONFIG_TOKEN, IAppConfig } from './app-config';
 
 @Injectable({
@@ -103,6 +103,7 @@ export class BaseService {
       context.set(RETRY_DELAY, args.retryCount);
     }
 
+    console.log('postDataRx', args);
     let body = args.body;
     return this.http.post<T>(args.url, body, { headers: new HttpHeaders(args.headers), context: context })
       .pipe(

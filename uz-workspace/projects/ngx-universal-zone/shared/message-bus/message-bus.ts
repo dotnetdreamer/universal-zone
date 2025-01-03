@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 
 import { Message } from './models';
 
-export const EVENT_NAME = 'vibes-ux-message';
+export const EVENT_NAME = 'uz-message-bus';
 
 @Injectable({ providedIn: 'root' })
 export class MessageBus {
