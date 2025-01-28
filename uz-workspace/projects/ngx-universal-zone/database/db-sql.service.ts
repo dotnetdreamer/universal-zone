@@ -197,6 +197,10 @@ export class DbSqliteService implements DbService {
     });
   }
 
+  removeAllRx(store: string): Observable<any> {
+    throw 'removeAllRx not impleted in db-sql yet';
+  }
+
   count(store, opts?: { key }): Promise<number> {
     return new Promise(async (resolve, reject) => {
       let sql = `SELECT count(*) AS total FROM ${store} `;

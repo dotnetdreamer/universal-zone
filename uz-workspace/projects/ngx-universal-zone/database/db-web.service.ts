@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import Dexie, { IndexableType } from 'dexie';
-import { Observable, Subject } from 'rxjs';
+import { forkJoin, Observable, of, Subject, switchMap } from 'rxjs';
 
 import { SchemaService } from './schema.service';
 import { DbService, DbServiceConfig } from './db-base.service';
@@ -215,6 +215,23 @@ export class DbWebService extends Dexie implements DbService {
     }
 
     await Promise.all(promises);
+  }
+
+  removeAllRx(store: string) {
+    return this.getAllRx<any[]>(store).pipe(
+      switchMap((entries) => {
+        const observables: Array<Observable<any>> = [];
+        for(let entry of entries) {
+          observables.push(this.removeRx(store, entry.id));
+        }
+    
+        if(!observables.length) {
+          return of(null);
+        }
+
+        return forkJoin(observables);
+      })
+    );
   }
 
   count(store, opts?: { key }): Promise<number> {

@@ -27,11 +27,19 @@ import { helpCircleOutline, closeCircleOutline, informationCircleOutline } from 
         :host {
             display: inline-block;
             width: 100%;
+
+            --help-icon-right: 10px;
+            --help-icon-left: initial;
+            --help-icon-caret-left: 35px;
+            --help-icon-caret-right: initial;
+            --help-icon-content-margin-left: 24px;
+            --help-icon-content-margin-right: initial;
         }
 
         .help-button {
             position: absolute;
-            right: 10px;
+            right: var(--help-icon-right);
+            left: var(--help-icon-left);
             top: 0;
             z-index: 9999;
             height: 36px;
@@ -54,7 +62,8 @@ import { helpCircleOutline, closeCircleOutline, informationCircleOutline } from 
             border-style: solid;
             border-color: transparent transparent var(--ion-color-primary) transparent;
             top: -19px;
-            left: 35px;
+            left: var(--help-icon-caret-left);
+            right: var(--help-icon-caret-right);
         }
 
         .help-content span {
@@ -67,7 +76,8 @@ import { helpCircleOutline, closeCircleOutline, informationCircleOutline } from 
         }
 
         .help-content p {
-            margin-left: 24px;
+            margin-left: var(--help-icon-content-margin-left);
+            margin-right: var(--help-icon-content-margin-right);
         }
     `],
     standalone: true,

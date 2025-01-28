@@ -68,6 +68,11 @@ export abstract class DbService {
     return;
   }
 
+  removeAllRx(store: string): Observable<any> {
+    // @ts-ignore
+    return;
+  }
+
   count(store, opts?: { key }): Promise<number> {
     // @ts-ignore
     return;
