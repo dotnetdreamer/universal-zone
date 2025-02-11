@@ -1,5 +1,4 @@
-import { ModuleWithProviders, NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { EnvironmentProviders, makeEnvironmentProviders, Provider } from '@angular/core';
 
 import { SchemaService } from './schema.service';
 import { DbWebService } from './db-web.service';
@@ -16,21 +15,16 @@ export function dbFactory(schemaSvc: SchemaService) {
       return new DbSqliteService(dbConfig, schemaSvc);
   }
 }
-@NgModule({
-  imports: [CommonModule],
-})
-export class DbModule { 
-  static forRoot(): ModuleWithProviders<DbModule> {
-    return {
-      ngModule: DbModule,
-      providers: [ 
-        SchemaService,
-        {
-          provide: DbService,
-          useFactory: dbFactory,
-          deps: [SchemaService],
-        }
-       ]
+
+export const provideDb = (): EnvironmentProviders => {
+  const providers: Provider[] = [
+    SchemaService,
+    {
+      provide: DbService,
+      useFactory: dbFactory,
+      deps: [SchemaService],
     }
-  }
-}
+  ];
+
+  return makeEnvironmentProviders(providers);
+};
