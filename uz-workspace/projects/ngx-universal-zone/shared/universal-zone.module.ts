@@ -1,21 +1,15 @@
-import { CommonModule } from "@angular/common";
-import { ModuleWithProviders, NgModule } from "@angular/core";
+import { EnvironmentProviders, makeEnvironmentProviders, Provider } from "@angular/core";
 
 import { AppSettingService } from "./app-setting.service";
 import { HelperService } from "./helper.service";
-@NgModule({
-    imports: [CommonModule],
-})
-export class UniversalZoneModule {
-  static forRoot(config?: UniversalZoneModuleConfig): ModuleWithProviders<UniversalZoneModule> {
-    return {
-      ngModule: UniversalZoneModule,
-      providers: [ AppSettingService, HelperService ]
-    }
-  }
-}
-export interface UniversalZoneModuleConfig {
-}
+
+export const provideUniversalZone = (): EnvironmentProviders => {
+  const providers: Provider[] = [
+    AppSettingService, HelperService
+  ];
+
+  return makeEnvironmentProviders(providers);
+};
 
 
 

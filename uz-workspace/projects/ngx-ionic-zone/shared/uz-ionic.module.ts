@@ -1,17 +1,8 @@
-import { ModuleWithProviders, NgModule } from "@angular/core";
+import { EnvironmentProviders, makeEnvironmentProviders, Provider } from "@angular/core";
 
-@NgModule({
-    imports: [],
-    providers: []
-})
-export class UniversalZoneIonicModule {
-  static forRoot(): ModuleWithProviders<UniversalZoneIonicModule> {
-    return {
-      ngModule: UniversalZoneIonicModule
-    }
-  }
-}
+export const provideUniversalZoneIonic = (): EnvironmentProviders => {
+  const providers: Provider[] = [
+  ];
 
-
-
-
+  return makeEnvironmentProviders(providers);
+};
