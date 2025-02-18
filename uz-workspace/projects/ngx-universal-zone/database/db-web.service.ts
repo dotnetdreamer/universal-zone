@@ -147,6 +147,12 @@ export class DbWebService extends Dexie implements DbService {
                 .where(opt.key)
                 .equals(opt.value);
               break;
+            case KeyRangeType.notEqualTo:
+              collection = this.Db
+                .table(store)
+                .where(opt.key)
+                .notEqual(opt.value);
+              break;
             case KeyRangeType.equalToIgnoreCase:
               collection = this.Db
                 .table(store)
@@ -285,4 +291,5 @@ export enum KeyRangeType {
   equalToIgnoreCase = 1,
   startsWithIgnoreCase = 2,
   equalTo = 3,
+  notEqualTo = 4
 }
