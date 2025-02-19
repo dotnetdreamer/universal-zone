@@ -10,3 +10,4 @@ export * from './shared/helper.service';
 
 export * from './shared/universal-zone.module';
 export * from './shared/message-bus';
+export * from './shared/flag-based-preloading-strategy';
