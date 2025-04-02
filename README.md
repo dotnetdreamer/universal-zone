@@ -3,7 +3,7 @@ This project contains common set of helpers needed for capacitor(for now, later 
 
 ## Development server
 
-Run `npm start` for a dev build in watch mode
+Run `cd uz-workspace && npm start` for a dev build in watch mode
 
 ## Build
 

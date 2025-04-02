@@ -3,12 +3,12 @@ import { Inject, Injectable } from "@angular/core";
 import { BehaviorSubject, distinctUntilChanged, Observable, Subject } from "rxjs";
 import { Network } from "@capacitor/network";
 
-import { APP_CONFIG_TOKEN, BaseService, IAppConfig } from "ngx-ionic-zone";
+import { APP_CONFIG_TOKEN, BaseHttpService, IAppConfig } from "ngx-ionic-zone";
 
 @Injectable({
   providedIn: 'root'
 })
-export class NetworkService extends BaseService {
+export class NetworkService extends BaseHttpService {
   private ngDestroy = new Subject<void>();
   
   connected$: Observable<boolean>;
