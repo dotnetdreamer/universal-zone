@@ -1,6 +1,6 @@
 {
   "name": "uz-workspace",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "ng": "ng",
     "start": "concurrently --kill-others \"npm run watch:uz\" \"npm run watch:ionic\"",

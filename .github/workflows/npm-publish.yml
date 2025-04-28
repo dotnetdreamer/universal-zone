@@ -40,14 +40,8 @@ jobs:
         working-directory: ./uz-workspace
         run: npm run build:ionic
         
-      - name: Publish Universal Zone to NPM
-        working-directory: ./uz-workspace/dist/ngx-universal-zone
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: '${{ secrets.NPM_TOKEN }}'
-          
-      - name: Publish Ionic Zone to NPM
-        working-directory: ./uz-workspace/dist/ngx-ionic-zone
+      - name: Publish Universal Zone and Ionic Zone to NPM 
+        working-directory: ./uz-workspace/dist
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: '${{ secrets.NPM_TOKEN }}'
