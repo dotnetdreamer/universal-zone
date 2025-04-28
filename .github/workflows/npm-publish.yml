@@ -4,6 +4,16 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type (patch, minor, major)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
 
 jobs:
   build:
@@ -46,32 +56,54 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org/'
+      
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           
-      - name: Download Universal Zone artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: ngx-universal-zone
-          path: ./ngx-universal-zone
-          
-      - name: Download Ionic Zone artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: ngx-ionic-zone
-          path: ./ngx-ionic-zone
+      - name: Bump Universal Zone version
+        working-directory: ./uz-workspace/projects/ngx-universal-zone
+        run: npm version ${{ github.event.inputs.release_type }} --no-git-tag-version
+        
+      - name: Bump Ionic Zone version
+        working-directory: ./uz-workspace/projects/ngx-ionic-zone
+        run: npm version ${{ github.event.inputs.release_type }} --no-git-tag-version
+        
+      - name: Commit version changes
+        run: |
+          git add .
+          git commit -m "Bump version for ${{ github.event.inputs.release_type }} release [skip ci]"
+          git push
+      
+      - name: Install dependencies
+        working-directory: ./uz-workspace
+        run: npm i
+      
+      - name: Build with updated versions
+        working-directory: ./uz-workspace
+        run: |
+          npm run build:uz
+          npm run build:ionic
           
       - name: Publish Universal Zone to NPM
-        working-directory: ./ngx-universal-zone
-        run: npm publish --access public
+        working-directory: ./uz-workspace/dist/ngx-universal-zone
+        run: npm publish --access public --tag latest
         env:
           NODE_AUTH_TOKEN: '${{ secrets.NPM_TOKEN }}'
           
       - name: Publish Ionic Zone to NPM
-        working-directory: ./ngx-ionic-zone
-        run: npm publish --access public
+        working-directory: ./uz-workspace/dist/ngx-ionic-zone
+        run: npm publish --access public --tag latest
         env:
           NODE_AUTH_TOKEN: '${{ secrets.NPM_TOKEN }}'
