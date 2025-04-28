@@ -30,7 +30,7 @@ jobs:
           
       - name: Install dependencies
         working-directory: ./uz-workspace
-        run: npm ci
+        run: npm i
         
       - name: Build Universal Zone
         working-directory: ./uz-workspace
