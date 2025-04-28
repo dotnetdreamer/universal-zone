@@ -16,7 +16,7 @@ on:
         - major
 
 jobs:
-  build-and-publish:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -26,7 +26,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          registry-url: 'https://registry.npmjs.org/'
           
       - name: Install dependencies
         working-directory: ./uz-workspace
@@ -40,14 +39,49 @@ jobs:
         working-directory: ./uz-workspace
         run: npm run build:ionic
         
+      - name: Upload Universal Zone artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ngx-universal-zone
+          path: ./uz-workspace/dist/ngx-universal-zone
+          
+      - name: Upload Ionic Zone artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ngx-ionic-zone
+          path: ./uz-workspace/dist/ngx-ionic-zone
+
+  publish:
+    needs: build
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org/'
+          
+      - name: Download Universal Zone artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ngx-universal-zone
+          path: ./ngx-universal-zone
+          
+      - name: Download Ionic Zone artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ngx-ionic-zone
+          path: ./ngx-ionic-zone
+          
       - name: Publish Universal Zone to NPM
-        working-directory: ./uz-workspace/dist/ngx-universal-zone
+        working-directory: ./ngx-universal-zone
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: '${{ secrets.NPM_TOKEN }}'
           
       - name: Publish Ionic Zone to NPM
-        working-directory: ./uz-workspace/dist/ngx-ionic-zone
+        working-directory: ./ngx-ionic-zone
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: '${{ secrets.NPM_TOKEN }}'
