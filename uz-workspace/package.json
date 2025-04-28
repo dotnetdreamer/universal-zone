@@ -1,6 +1,6 @@
 {
   "name": "uz-workspace",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "concurrently --kill-others \"npm run watch:uz\" \"npm run watch:ionic\"",
@@ -8,6 +8,7 @@
     "watch:ionic": "ng build ngx-ionic-zone --configuration development --watch",
     "build:uz": "ng build ngx-universal-zone --configuration production",
     "watch:uz": "ng build ngx-universal-zone --configuration development --watch",
+    "build:all": "npm run build:uz && npm run build:ionic",
     "test": "ng test"
   },
   "private": true,
