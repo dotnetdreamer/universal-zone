@@ -15,6 +15,10 @@ on:
         - minor
         - major
 
+# Add permissions for the GITHUB_TOKEN. We needed for 'Commit version changes'
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -84,7 +88,7 @@ jobs:
         run: |
           git add .
           git commit -m "Bump version for ${{ github.event.inputs.release_type }} release [skip ci]"
-          git push
+          git push origin HEAD:main
       
       - name: Install dependencies
         working-directory: ./uz-workspace
