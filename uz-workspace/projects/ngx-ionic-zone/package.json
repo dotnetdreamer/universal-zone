@@ -4,8 +4,8 @@
   "peerDependencies": {
     "@angular/common": "^19.0.0",
     "@angular/core": "^19.0.0",
-    "@capacitor/network": "^6.0.2",
-    "@capacitor/core": "6.1.2"
+    "@capacitor/network": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"
