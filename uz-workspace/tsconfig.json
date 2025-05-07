@@ -25,6 +25,9 @@
       "ngx-ionic-zone/network": [
         "./dist/ngx-ionic-zone/network"
       ],
+      "ngx-ionic-zone/database": [
+        "./dist/ngx-ionic-zone/database"
+      ],
       "ngx-universal-zone": [
         "./dist/ngx-universal-zone"
       ],
