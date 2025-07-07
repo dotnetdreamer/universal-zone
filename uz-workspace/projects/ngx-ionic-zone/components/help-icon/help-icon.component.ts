@@ -27,6 +27,7 @@ import { helpCircleOutline, closeCircleOutline, informationCircleOutline } from 
         :host {
             display: inline-block;
             width: 100%;
+            display:none; /* tmp: hide by default */
 
             --help-icon-right: 10px;
             --help-icon-left: initial;
