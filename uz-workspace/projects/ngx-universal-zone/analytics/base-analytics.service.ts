@@ -60,6 +60,17 @@ export interface IAnalyticsService {
    * Get analytics debug info
    */
   getDebugInfo(): any;
+
+  /**
+   * Dashboard specific events
+   */
+  trackDashboardEvents: {
+    dashboardViewed(): void;
+    dashboardButtonClicked(buttonType: string): void;
+    storeInfoClicked(): void;
+    lottieAnimationCompleted(): void;
+    syncStatusViewed(status: string): void;
+  };
 }
 
 @Injectable({
@@ -79,6 +90,17 @@ export abstract class BaseAnalyticsService implements IAnalyticsService {
   abstract setUserProperties(properties: { [key: string]: any }): void;
   abstract testAnalytics(): void;
   abstract getDebugInfo(): any;
+  
+  /**
+   * Dashboard specific events
+   */
+  abstract trackDashboardEvents: {
+    dashboardViewed(): void;
+    dashboardButtonClicked(buttonType: string): void;
+    storeInfoClicked(): void;
+    lottieAnimationCompleted(): void;
+    syncStatusViewed(status: string): void;
+  };
   
   /**
    * Internal method to track event count in debug mode
@@ -101,4 +123,81 @@ export abstract class BaseAnalyticsService implements IAnalyticsService {
       });
     }
   }
+}
+
+/**
+ * No-op implementation for development environment
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class NoOpAnalyticsService extends BaseAnalyticsService {
+  trackPageView(pageName: string, pageTitle?: string): void {
+    this.logDebug(`[Dev] Page View: ${pageName}`, { pageTitle });
+  }
+
+  trackButtonClick(buttonName: string, buttonLocation?: string): void {
+    this.logDebug(`[Dev] Button Click: ${buttonName}`, { buttonLocation });
+  }
+
+  trackNavigation(from: string, to: string, method?: string): void {
+    this.logDebug(`[Dev] Navigation: ${from} -> ${to}`, { method });
+  }
+
+  trackUserAction(action: string, category: string, label?: string, value?: number): void {
+    this.logDebug(`[Dev] User Action: ${action}`, { category, label, value });
+  }
+
+  trackBusinessEvent(eventName: string, parameters: { [key: string]: any }): void {
+    this.logDebug(`[Dev] Business Event: ${eventName}`, parameters);
+  }
+
+  trackError(errorMessage: string, errorLocation: string, errorType?: string): void {
+    this.logDebug(`[Dev] Error: ${errorMessage}`, { errorLocation, errorType });
+  }
+
+  setUserId(userId: string): void {
+    this.logDebug(`[Dev] Set User ID: ${userId}`);
+  }
+
+  setUserProperties(properties: { [key: string]: any }): void {
+    this.logDebug(`[Dev] Set User Properties:`, properties);
+  }
+
+  testAnalytics(): void {
+    console.log('[Dev] Analytics test - no-op implementation');
+  }
+
+  getDebugInfo(): any {
+    return {
+      implementation: 'no-op',
+      isDebugMode: this.isDebugMode,
+      eventCount: this.eventCount
+    };
+  }
+
+  /**
+   * Dashboard specific events
+   */
+  trackDashboardEvents = {
+    dashboardViewed: () => {
+      this.logDebug('[Dev] Dashboard viewed');
+    },
+    
+    dashboardButtonClicked: (buttonType: string) => {
+      this.logDebug(`[Dev] Dashboard button clicked: ${buttonType}`);
+    },
+    
+    storeInfoClicked: () => {
+      this.logDebug('[Dev] Store info clicked');
+    },
+    
+    lottieAnimationCompleted: () => {
+      this.logDebug('[Dev] Lottie animation completed');
+    },
+    
+    syncStatusViewed: (status: string) => {
+      this.logDebug(`[Dev] Sync status viewed: ${status}`);
+    }
+  };
 }

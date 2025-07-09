@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { FirebaseAnalyticsService } from './firebase-analytics.service';
+import { BaseAnalyticsService } from './base-analytics.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +12,7 @@ export class RouterAnalyticsService {
 
   constructor(
     private router: Router,
-    private analyticsService: FirebaseAnalyticsService
+    private analyticsService: BaseAnalyticsService
   ) {
     this.initializeRouterTracking();
   }
