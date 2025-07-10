@@ -8,6 +8,6 @@ export * from './shared/app-injector';
 export * from './shared/app-setting.service';
 export * from './shared/helper.service';
 
-export * from './shared/universal-zone.module';
+export * from './shared/universal-zone.provider';
 export * from './shared/message-bus';
 export * from './shared/flag-based-preloading-strategy';
