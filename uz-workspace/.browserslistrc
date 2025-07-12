@@ -1,0 +1,23 @@
+# This file is used by the build system to adjust CSS and JS output to support the specified browsers below.
+# For additional information regarding the format and rule options, please see:
+# https://github.com/browserslist/browserslist#queries
+
+# For the full list of supported browsers by the Angular framework, please see:
+# https://angular.io/guide/browser-support
+
+# You can see what browsers were selected by your queries by running:
+#   npx browserslist
+
+# Updated for broader compatibility with ES2022 features and Android 12 support
+Chrome >=60
+ChromeAndroid >=60
+Firefox >=55
+Edge >=79
+Safari >=12
+iOS >=12
+Android >=5.0
+
+# Additional support for older browsers (uncomment if needed)
+# IE 11 (requires additional polyfills)
+# > 0.5%
+# last 2 versions

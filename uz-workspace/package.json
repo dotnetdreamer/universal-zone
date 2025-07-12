@@ -26,6 +26,7 @@
     "@capacitor/haptics": "^7.0.1",
     "@capacitor/network": "^7.0.0",
     "@ionic/angular": "^8.4.1",
+    "core-js": "^3.44.0",
     "date-fns": "^4.1.0",
     "dexie": "^4.0.10",
     "ionicons": "^7.4.0",
