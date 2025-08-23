@@ -6,7 +6,6 @@ import { ITableOptions } from "./schema.service";
 import { DbFilter } from "./db-web.service";
 
 export class DbServiceConfig {
-  dbType!: DbServiceType;
   dbName!: string;
   schema!: ITableOptions[];
 }
