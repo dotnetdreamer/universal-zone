@@ -89,7 +89,7 @@ export class AppModule {
 
 ```
 
-If you are testing the library locall then also go to your app root tsconfig.json file and add the following to **compilerOptions**:
+If you are testing the library locally then also go to your app root tsconfig.json file and add the following to **compilerOptions**:
 
 ```
 "paths": {
