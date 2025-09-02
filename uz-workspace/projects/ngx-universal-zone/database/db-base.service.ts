@@ -82,10 +82,16 @@ export abstract class DbService {
     return;
   }
 
+
   deleteDb(): Promise<any> {
     // @ts-ignore
     return;
   }
+
+  /**
+   * Deletes the database. Alias for deleteDb().
+   */
+  abstract deleteDatabase(): Promise<any>;
 
   deleteTable(store): Observable<void> {
     // @ts-ignore

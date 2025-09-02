@@ -16,15 +16,18 @@ export class DbSqliteService implements DbService {
   ) {
     this._dbName = config.dbName;
 
-    CapacitorSQLite.deleteDatabase({ database: this._dbName })
-    .then(() => {
-
-      this.open();
-      this.initializeDb();
-    });
-
+    this.open();
+    this.initializeDb();
   }
   
+  async deleteDatabase(): Promise<void> {
+    try {
+      await CapacitorSQLite.deleteDatabase({ database: this._dbName });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async open() {
     try {
       const sqlite: SQLiteConnection = new SQLiteConnection(CapacitorSQLite);
@@ -273,5 +276,4 @@ export class DbSqliteService implements DbService {
   private _dbError(err) {
     alert('Open database ERROR: ' + JSON.stringify(err));
   }
-
 }

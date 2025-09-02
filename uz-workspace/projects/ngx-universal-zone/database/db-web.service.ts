@@ -260,11 +260,19 @@ export class DbWebService extends Dexie implements DbService {
     });
   }
 
+
   deleteDb() {
     return new Promise(async (resolve, reject) => {
       await this.Db.delete();
       resolve(null);
     });
+  }
+
+  /**
+   * Deletes the database. Alias for deleteDb().
+   */
+  async deleteDatabase(): Promise<any> {
+    return this.deleteDb();
   }
 
   deleteTable(store) {
