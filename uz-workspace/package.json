@@ -8,6 +8,7 @@
     "watch:ionic": "ng build ngx-ionic-zone --configuration development --watch",
     "build:uz": "ng build ngx-universal-zone --configuration production",
     "watch:uz": "ng build ngx-universal-zone --configuration development --watch",
+    "build": "npm run build:all",
     "build:all": "npm run build:uz && npm run build:ionic",
     "test": "ng test",
     "clean": "rimraf node_modules"
