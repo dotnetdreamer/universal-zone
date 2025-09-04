@@ -95,19 +95,35 @@ export class DbSqliteService implements DbService {
     let sql = ``;
     const values: any[] = [];
 
-    const total = await this.count(store);
-    if (total) {
+    // Get primary key field from schema
+    const table: any = this.schemaSvc.schema.stores.filter(
+      (s) => s.name === store
+    )[0];
+    const pk = table.columns.filter((c) => c.isPrimaryKey)[0];
+    const pkName = pk.name;
+    const pkValue = data[pkName];
+
+    // Check if record exists by primary key
+    let recordExists = false;
+    if (pkValue !== undefined && pkValue !== null) {
+      recordExists = await this._recordExists(store, pkName, pkValue);
+    }
+
+    if (recordExists) {
       //update
       sql = `UPDATE ${store} SET `;
       //columns
       for (let prop in data) {
         if (data.hasOwnProperty(prop)) {
           const processedValue = this._processValueForStorage(data[prop]);
-          sql += `${prop}='${processedValue}',`;
+          sql += `${prop}=?,`;
+          values.push(processedValue);
         }
       }
       //remove extra ',' at the end
       sql = sql.substr(0, sql.length - 1);
+      sql += ` WHERE ${pkName} = ?`;
+      values.push(pkValue);
     } else {
       //insert
       sql = `INSERT INTO ${store} `;
@@ -190,7 +206,6 @@ export class DbSqliteService implements DbService {
       let sql = `SELECT * FROM ${store}`;
 
       try {
-        let data;
         const { values } = await this._db.query(sql);
         const processedValues = values.map(item => this._processRetrievedData(item));
         resolve(processedValues as any);
@@ -261,11 +276,27 @@ export class DbSqliteService implements DbService {
         sql += `(`;
 
         for (let col of schema.columns) {
-          //TODO:  need to fix primary key
-          // const ikPkTypeNumber = col['type'] == 'INTEGER';
-          sql += `${col.name}${col.type ? ' ' + col.type : ''}${
-            col['isPrimaryKey'] ? ' PRIMARY KEY' : ''
-          },`;
+          // Check if primary key and is INTEGER type for auto increment
+          const isPrimaryKey = col['isPrimaryKey'];
+          const isIntegerType = col['type'] && col['type'].toUpperCase() === 'INTEGER';
+          
+          sql += `${col.name}`;
+          
+          // Add type
+          if (col.type) {
+            sql += ` ${col.type}`;
+          }
+          
+          // Add PRIMARY KEY with AUTOINCREMENT for INTEGER primary keys
+          if (isPrimaryKey) {
+            if (isIntegerType) {
+              sql += ` PRIMARY KEY AUTOINCREMENT`;
+            } else {
+              sql += ` PRIMARY KEY`;
+            }
+          }
+          
+          sql += `,`;
         }
 
         //remove extra ',' at the end
@@ -278,6 +309,19 @@ export class DbSqliteService implements DbService {
         promises.push(promise);        
       }
       await Promise.all(promises);
+  }
+
+  /**
+   * Check if a record exists by primary key
+   */
+  private async _recordExists(store: string, pkName: string, pkValue: any): Promise<boolean> {
+    try {
+      const sql = `SELECT 1 FROM ${store} WHERE ${pkName} = ? LIMIT 1`;
+      const { values } = await this._db.query(sql, [pkValue]);
+      return values && values.length > 0;
+    } catch (e) {
+      return false;
+    }
   }
 
   /**
