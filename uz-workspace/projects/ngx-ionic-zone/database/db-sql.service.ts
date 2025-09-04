@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { Observable, Subject } from 'rxjs';
-import { SchemaService, DbService, DbServiceConfig, DbFilter } from 'ngx-universal-zone/database';
+import { SchemaService, DbService, DbServiceConfig, DbFilter, KeyRangeType } from 'ngx-universal-zone/database';
 
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 @Injectable()
@@ -180,8 +180,8 @@ export class DbSqliteService implements DbService {
       const pk = table.columns.filter((c) => c.isPrimaryKey)[0];
       const pkName = pk.name;
 
-      let sql = `SELECT * FROM ${store} WHERE ${pkName} = '${key}' LIMIT 1`;
-      const { values } = await this._db.query(sql);
+      let sql = `SELECT * FROM ${store} WHERE ${pkName} = ? LIMIT 1`;
+      const { values } = await this._db.query(sql, [key]);
       
       const result = values[0];
       if (result) {
@@ -204,10 +204,31 @@ export class DbSqliteService implements DbService {
   getAll<T>(store: string, opt?: DbFilter): Promise<T> {
     return new Promise(async (resolve, reject) => {
       let sql = `SELECT * FROM ${store}`;
+      const values: any[] = [];
 
       try {
-        const { values } = await this._db.query(sql);
-        const processedValues = values.map(item => this._processRetrievedData(item));
+        // Build WHERE clause based on filter
+        const whereClause = this._buildWhereClause(opt, values);
+        if (whereClause) {
+          sql += ` WHERE ${whereClause}`;
+        }
+
+        // Build ORDER BY clause
+        const orderByClause = this._buildOrderByClause(opt);
+        if (orderByClause) {
+          sql += ` ${orderByClause}`;
+        }
+
+        // Build LIMIT and OFFSET for pagination
+        const limitClause = this._buildLimitClause(opt);
+        if (limitClause) {
+          sql += ` ${limitClause}`;
+        }
+
+        console.log('getAll executing SQL:', sql, 'with values:', values);
+        
+        const { values: queryResults } = await this._db.query(sql, values);
+        const processedValues = queryResults.map(item => this._processRetrievedData(item));
         resolve(processedValues as any);
       } catch (e) {
         reject(e);
@@ -237,14 +258,28 @@ export class DbSqliteService implements DbService {
 
   count(store, opts?: { key }): Promise<number> {
     return new Promise(async (resolve, reject) => {
-      let sql = `SELECT count(*) AS total FROM ${store} `;
+      let sql = `SELECT count(*) AS total FROM ${store}`;
+      const values: any[] = [];
+
+      if (opts && opts.key !== undefined) {
+        // Get primary key field from schema
+        const table: any = this.schemaSvc.schema.stores.filter(
+          (s) => s.name === store
+        )[0];
+        const pk = table.columns.filter((c) => c.isPrimaryKey)[0];
+        const pkName = pk.name;
+        
+        sql += ` WHERE ${pkName} = ?`;
+        values.push(opts.key);
+      }
 
       try {
-        const { values } = await this._db.query(sql);
-        resolve(values[0].total);
+        const { values: queryResults } = await this._db.query(sql, values);
+        resolve(queryResults[0].total);
       } catch (e) {
         reject(e);
-      }    });
+      }
+    });
   }
 
   countRx(store, opts?: { key }) {
@@ -309,6 +344,69 @@ export class DbSqliteService implements DbService {
         promises.push(promise);        
       }
       await Promise.all(promises);
+  }
+
+  /**
+   * Build WHERE clause based on DbFilter options
+   */
+  private _buildWhereClause(opt?: DbFilter, values?: any[]): string | null {
+    if (!opt || !opt.key || opt.value === undefined) {
+      return null;
+    }
+
+    const keyRange = opt.keyRange || KeyRangeType.equalTo;
+    
+    switch (keyRange) {
+      case KeyRangeType.equalTo:
+        values?.push(opt.value);
+        return `${opt.key} = ?`;
+        
+      case KeyRangeType.notEqualTo:
+        values?.push(opt.value);
+        return `${opt.key} != ?`;
+        
+      case KeyRangeType.equalToIgnoreCase:
+        values?.push(opt.value);
+        return `LOWER(${opt.key}) = LOWER(?)`;
+        
+      case KeyRangeType.startsWithIgnoreCase:
+        values?.push(`${opt.value}%`);
+        return `LOWER(${opt.key}) LIKE LOWER(?)`;
+        
+      default:
+        values?.push(opt.value);
+        return `${opt.key} = ?`;
+    }
+  }
+
+  /**
+   * Build ORDER BY clause based on DbFilter options
+   */
+  private _buildOrderByClause(opt?: DbFilter): string | null {
+    if (!opt?.sortBy) {
+      return null;
+    }
+
+    const sortType = opt.sortType || 'asc';
+    return `ORDER BY ${opt.sortBy} ${sortType.toUpperCase()}`;
+  }
+
+  /**
+   * Build LIMIT and OFFSET clause for pagination
+   */
+  private _buildLimitClause(opt?: DbFilter): string | null {
+    if (!opt?.pageSize) {
+      return null;
+    }
+
+    let clause = `LIMIT ${opt.pageSize}`;
+    
+    if (opt.pageIndex && opt.pageIndex > 0) {
+      const offset = (opt.pageIndex - 1) * opt.pageSize;
+      clause += ` OFFSET ${offset}`;
+    }
+
+    return clause;
   }
 
   /**
