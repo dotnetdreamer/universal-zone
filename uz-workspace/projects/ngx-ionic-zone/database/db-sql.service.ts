@@ -102,7 +102,8 @@ export class DbSqliteService implements DbService {
       //columns
       for (let prop in data) {
         if (data.hasOwnProperty(prop)) {
-          sql += `${prop}='${data[prop]}',`;
+          const processedValue = this._processValueForStorage(data[prop]);
+          sql += `${prop}='${processedValue}',`;
         }
       }
       //remove extra ',' at the end
@@ -125,7 +126,8 @@ export class DbSqliteService implements DbService {
       sql += ` VALUES (`;
       for (let prop in data) {
         sql += `?,`;
-        values.push(data[prop]);
+        const processedValue = this._processValueForStorage(data[prop]);
+        values.push(processedValue);
       }
       sql = sql.substr(0, sql.length - 1);
       sql += `)`;
@@ -165,7 +167,11 @@ export class DbSqliteService implements DbService {
       let sql = `SELECT * FROM ${store} WHERE ${pkName} = '${key}' LIMIT 1`;
       const { values } = await this._db.query(sql);
       
-      return values[0] as T;
+      const result = values[0];
+      if (result) {
+        return this._processRetrievedData(result) as T;
+      }
+      return result as T;
   }
 
   getRx<T>(store: string, key: any): Observable<T> {
@@ -186,7 +192,8 @@ export class DbSqliteService implements DbService {
       try {
         let data;
         const { values } = await this._db.query(sql);
-        resolve(values as any);
+        const processedValues = values.map(item => this._processRetrievedData(item));
+        resolve(processedValues as any);
       } catch (e) {
         reject(e);
       }
@@ -269,9 +276,57 @@ export class DbSqliteService implements DbService {
 
         const promise = this._db.execute(sql);
         promises.push(promise);        
-        await Promise.all(promises);
+      }
+      await Promise.all(promises);
   }
-}
+
+  /**
+   * Process value for storage - stringify arrays and objects
+   */
+  private _processValueForStorage(value: any): any {
+    if (value === null || value === undefined) {
+      return value;
+    }
+    
+    if (Array.isArray(value) || (typeof value === 'object' && value.constructor === Object)) {
+      return JSON.stringify(value);
+    }
+    
+    return value;
+  }
+
+  /**
+   * Process retrieved data - parse stringified arrays and objects back to their original form
+   */
+  private _processRetrievedData(data: any): any {
+    if (!data) {
+      return data;
+    }
+
+    const processedData = { ...data };
+    
+    for (const key in processedData) {
+      if (processedData.hasOwnProperty(key)) {
+        const value = processedData[key];
+        
+        // Try to parse if it's a string that looks like JSON
+        if (typeof value === 'string') {
+          try {
+            // Check if it starts and ends with array or object brackets
+            if ((value.startsWith('[') && value.endsWith(']')) || 
+                (value.startsWith('{') && value.endsWith('}'))) {
+              processedData[key] = JSON.parse(value);
+            }
+          } catch (e) {
+            // If parsing fails, keep the original string value
+            // This ensures we don't break regular string data
+          }
+        }
+      }
+    }
+    
+    return processedData;
+  }
 
   private _dbError(err) {
     alert('Open database ERROR: ' + JSON.stringify(err));
