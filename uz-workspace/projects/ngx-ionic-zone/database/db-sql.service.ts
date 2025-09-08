@@ -185,7 +185,7 @@ export class DbSqliteService implements DbService {
       
       const result = values[0];
       if (result) {
-        return this._processRetrievedData(result) as T;
+        return this._processRetrievedData(result, store) as T;
       }
       return result as T;
   }
@@ -228,7 +228,7 @@ export class DbSqliteService implements DbService {
         console.log('getAll executing SQL:', sql, 'with values:', values);
         
         const { values: queryResults } = await this._db.query(sql, values);
-        const processedValues = queryResults.map(item => this._processRetrievedData(item));
+        const processedValues = queryResults.map(item => this._processRetrievedData(item, store));
         resolve(processedValues as any);
       } catch (e) {
         reject(e);
@@ -317,9 +317,10 @@ export class DbSqliteService implements DbService {
           
           sql += `${col.name}`;
           
-          // Add type
+          // Add type - convert BOOLEAN to INTEGER for SQLite
           if (col.type) {
-            sql += ` ${col.type}`;
+            const columnType = col.type.toUpperCase() === 'BOOLEAN' ? 'INTEGER' : col.type;
+            sql += ` ${columnType}`;
           }
           
           // Add PRIMARY KEY with AUTOINCREMENT for INTEGER primary keys
@@ -423,11 +424,16 @@ export class DbSqliteService implements DbService {
   }
 
   /**
-   * Process value for storage - stringify arrays and objects
+   * Process value for storage - stringify arrays and objects, convert booleans to integers
    */
   private _processValueForStorage(value: any): any {
     if (value === null || value === undefined) {
       return value;
+    }
+    
+    // Handle boolean values - convert to integers (SQLite standard)
+    if (typeof value === 'boolean') {
+      return value ? 1 : 0;
     }
     
     if (Array.isArray(value) || (typeof value === 'object' && value.constructor === Object)) {
@@ -439,17 +445,36 @@ export class DbSqliteService implements DbService {
 
   /**
    * Process retrieved data - parse stringified arrays and objects back to their original form
+   * Convert integers back to booleans for BOOLEAN type columns
    */
-  private _processRetrievedData(data: any): any {
+  private _processRetrievedData(data: any, storeName?: string): any {
     if (!data) {
       return data;
     }
 
     const processedData = { ...data };
     
+    // Get schema information for boolean field identification
+    let booleanFields: string[] = [];
+    if (storeName) {
+      const tableSchema = this.schemaSvc.schema.stores.find(s => s.name === storeName);
+      if (tableSchema) {
+        // Look for fields with BOOLEAN type
+        booleanFields = tableSchema.columns
+          .filter(col => col.type === 'BOOLEAN')
+          .map(col => col.name);
+      }
+    }
+    
     for (const key in processedData) {
       if (processedData.hasOwnProperty(key)) {
         const value = processedData[key];
+        
+        // Convert integers to booleans for BOOLEAN type fields
+        if (booleanFields.includes(key) && (value === 0 || value === 1)) {
+          processedData[key] = Boolean(value);
+          continue;
+        }
         
         // Try to parse if it's a string that looks like JSON
         if (typeof value === 'string') {
