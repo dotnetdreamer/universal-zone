@@ -1,4 +1,4 @@
-import { Injectable, Optional } from '@angular/core';
+import { Injectable } from '@angular/core';
 
 import { DbService, SchemaService, DbSettingConstant } from '../database';
 import { Observable } from 'rxjs';
