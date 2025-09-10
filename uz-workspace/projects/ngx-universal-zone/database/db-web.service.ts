@@ -23,7 +23,18 @@ export class DbWebService extends Dexie implements DbService {
     schemaService.schema.stores.forEach((s) => {
       let cols = ``;
       for (let c of s.columns) {
-        cols += `${c.isPrimaryKey ? `++${c.name}` : `,${c.name}`}`;
+        if (c.isPrimaryKey) {
+          // Only use auto-increment (++) for INTEGER type primary keys
+          const useAutoIncrement = c.type?.toUpperCase() === 'INTEGER';
+          if (useAutoIncrement) {
+            cols += `++${c.name}`;
+          } else {
+            // For non-INTEGER primary keys, use the column name as the primary key without auto-increment
+            cols += `${c.name}`;
+          }
+        } else {
+          cols += `,${c.name}`;
+        }
       }
       schema[s.name] = cols;
     });
@@ -50,6 +61,11 @@ export class DbWebService extends Dexie implements DbService {
       )[0];
       const key = schema.columns.filter((s) => s.isPrimaryKey)[0];
 
+      // Check if primary key is provided for non-auto-increment keys
+      if (key.type?.toUpperCase() !== 'INTEGER' && !data[key.name]) {
+        return reject(new Error(`Primary key '${key.name}' must be provided for table '${store}'`));
+      }
+
       const exist = data[key.name] ? await this.get(store, data[key.name]) : null;
       if (exist) {
         //update
@@ -61,13 +77,27 @@ export class DbWebService extends Dexie implements DbService {
             (e) => reject(e)
           );
       } else {
-        this.Db
-          .table(store)
-          .add(data)
-          .then(
-            (r) => resolve(null as any),
-            (e) => reject(e)
-          );
+        // For non-auto-increment primary keys, we need to use put instead of add
+        // or ensure the primary key is set in the data
+        if (key.type?.toUpperCase() === 'INTEGER') {
+          // Auto-increment primary key, use add
+          this.Db
+            .table(store)
+            .add(data)
+            .then(
+              (r) => resolve(null as any),
+              (e) => reject(e)
+            );
+        } else {
+          // Non-auto-increment primary key, use put with the key
+          this.Db
+            .table(store)
+            .put(data, data[key.name])
+            .then(
+              (r) => resolve(null as any),
+              (e) => reject(e)
+            );
+        }
       }
     });
   }
