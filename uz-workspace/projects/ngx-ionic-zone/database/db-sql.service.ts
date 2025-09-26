@@ -201,6 +201,18 @@ export class DbSqliteService implements DbService {
     });
   }
 
+  async getByFieldName<T>(storeName: string, fieldName: string, key: any): Promise<Array<T>> {
+    try {
+      const sql = `SELECT * FROM ${storeName} WHERE ${fieldName} = ?`;
+      const { values } = await this._db.query(sql, [key]);
+      
+      const processedValues = values.map(item => this._processRetrievedData(item, storeName));
+      return processedValues as Array<T>;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   getAll<T>(store: string, opt?: DbFilter): Promise<T> {
     return new Promise(async (resolve, reject) => {
       let sql = `SELECT * FROM ${store}`;
@@ -236,24 +248,59 @@ export class DbSqliteService implements DbService {
     });
   }
 
-  remove(store, key): Promise<any> {
-    return new Promise((resolve, reject) => {
-      throw 'remove not impleted in db-sql yet';
-    });
+  async remove(store, key): Promise<any> {
+    try {
+      // Get primary key field from schema
+      const table: any = this.schemaSvc.schema.stores.filter(
+        (s) => s.name === store
+      )[0];
+      const pk = table.columns.filter((c) => c.isPrimaryKey)[0];
+      const pkName = pk.name;
+
+      const sql = `DELETE FROM ${store} WHERE ${pkName} = ?`;
+      const result = await this._db.run(sql, [key]);
+      
+      return {
+        rowsAffected: result.changes.changes
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   removeRx(store, key): Observable<any> {
-    throw 'remove not impleted in db-sql yet';
-  }
-
-  removeAll(store) {
-    return new Promise((resolve, reject) => {
-      throw 'removeAll not impleted in db-sql yet';
+    return new Observable((observer) => {
+      this.remove(store, key).then((result) => {
+        observer.next(result);
+        observer.complete();
+      }, (error) => {
+        observer.error(error);
+      });
     });
   }
 
+  async removeAll(store): Promise<any> {
+    try {
+      const sql = `DELETE FROM ${store}`;
+      const result = await this._db.run(sql, []);
+      
+      return {
+        rowsAffected: result.changes.changes
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   removeAllRx(store: string): Observable<any> {
-    throw 'removeAllRx not impleted in db-sql yet';
+    return new Observable((observer) => {
+      this.removeAll(store).then((result) => {
+        observer.next(result);
+        observer.complete();
+      }, (error) => {
+        observer.error(error);
+      });
+    });
   }
 
   count(store, opts?: { key }): Promise<number> {
@@ -291,12 +338,26 @@ export class DbSqliteService implements DbService {
     });
   }
 
-  async deleteDb() {
+  async deleteDb(): Promise<any> {
+    try {
+      await this._db.close();
+      await this.deleteDatabase();
+      return null;
+    } catch (error) {
+      throw error;
+    }
   }
 
   
   deleteTable(store): Observable<void> {
-    throw 'deleteTable not impleted in db-sql yet';
+    return new Observable<void>((observer) => {
+      this.removeAll(store).then((result) => {
+        observer.next(result);
+        observer.complete();
+      }, (error) => {
+        observer.error(error);
+      });
+    });
   }
 
   private async _prepareTables() {
