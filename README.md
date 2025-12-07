@@ -1,9 +1,9 @@
-## Intorduction
-This project contains common set of helpers needed for capacitor(for now, later maybe NativeScript) apps
+## Introduction
+This project contains common set of helpers needed for Capacitor (and later maybe NativeScript) apps.
 
 ## Development server
 
-Run `cd uz-workspace && npm start` for a dev build in watch mode
+Run `cd uz-workspace && npm start` for a dev build in watch mode.
 
 ## Build
 
@@ -12,14 +12,61 @@ Run `npm run build` to build the project. The build artifacts will be stored in 
 ## Installation
 
 ### Locally
-After running `npm run build` go to **dist/ngx-universal-zone** directory and copy the path. Now go to your app and install it just like any other npm package e.g `npm i C:\Git\universal-zone\uz-workspace\dist\ngx-universal-zone`
+After running `npm run build`, go to **dist/ngx-universal-zone** directory and copy the path. Now go to your app and install it just like any other npm package:
+
+```bash
+npm i C:\Git\universal-zone\uz-workspace\dist\ngx-universal-zone
+npm i C:\Git\universal-zone\uz-workspace\dist\ngx-ionic-zone
+```
 
 ## Usage
-Make sure in your root `tsconfig.json` file, target, module and lib is set to `es2022`. Next create a file e.g `db-constant.ts` with following class
 
+### Configuration Files
+
+#### tsconfig.json
+Make sure in your root `tsconfig.json` file, target, module and lib is set to `es2022`. Add the following path mappings to **compilerOptions**:
+
+```json
+"paths": {
+  "ngx-universal-zone":  ["./node_modules/ngx-universal-zone/*"],
+  "ngx-universal-zone/*":  ["./node_modules/ngx-universal-zone/*"],
+  "ngx-universal-zone/database/*":  ["./node_modules/ngx-universal-zone/database/*"],
+  "ngx-universal-zone/analytics/*":  ["./node_modules/ngx-universal-zone/analytics/*"],
+  "ngx-universal-zone/pipes/*":  ["./node_modules/ngx-universal-zone/pipes/*"],
+  "ngx-universal-zone/ui/*":  ["./node_modules/ngx-universal-zone/ui/*"],
+  "ngx-ionic-zone":  ["./node_modules/ngx-ionic-zone"],
+  "ngx-ionic-zone/*":  ["./node_modules/ngx-ionic-zone/*"],
+  "ngx-ionic-zone/network/*":  ["./node_modules/ngx-ionic-zone/network/*"],
+  "ngx-ionic-zone/database/*":  ["./node_modules/ngx-ionic-zone/database/*"],
+  "rxjs": ["node_modules/rxjs"],
+  "rxjs/*": ["node_modules/rxjs/*"]
+}
 ```
-import { DbServiceConfig, DbServiceType, DbSettingConfig, DbSettingConstant } from "ngx-universal-zone/database";
-import { ITableOptions } from "ngx-universal-zone/database";
+
+#### angular.json
+Add `"preserveSymlinks": true` to the build options:
+
+```json
+"architect": {
+  "build": {
+    "builder": "@angular-devkit/build-angular:application",
+    "options": {
+      "preserveSymlinks": true,
+      "outputPath": "dist/web",
+      "index": "src/index.html",
+      "browser": "src/main.ts",
+      "polyfills": ["zone.js"]
+    }
+  }
+}
+```
+
+### Database Configuration
+
+Create a file e.g `db-constant.ts` with the following:
+
+```typescript
+import { DbServiceConfig, DbSettingConfig, DbSettingConstant, ITableOptions } from "ngx-universal-zone/database";
 
 export class DbConstant {
     public static readonly SETTING = DbSettingConstant.SETTING;
@@ -27,10 +74,9 @@ export class DbConstant {
 }
 
 export const dbConfig: DbServiceConfig = {
-    dbType: DbServiceType.IndexDd,
     dbName: 'choisy',
     schema: <ITableOptions[]>[
-      { ...DbSettingConfig.schema },  //must needed in order to crate 'setting' table
+      { ...DbSettingConfig.schema },  // Required to create 'setting' table
       {
         name: DbConstant.CUSTOMER,
         columns: [
@@ -46,79 +92,79 @@ export const dbConfig: DbServiceConfig = {
         ],
       },
     ],
-}
+};
 ```
 
-Now add `UniversalZoneModule` and `DbModule` in your root `AppModule` imports. Provide your own implementation of schema.
+### Bootstrap Configuration (Standalone)
 
-```
-function initializeDb(schemaSvc: SchemaService) {
-  return async () => {
-    const platform = await Capacitor.getPlatform();
-    dbConfig.dbType = platform === 'web' ? DbServiceType.IndexDd : DbServiceType.Sqlite;
+In your `main.ts`, configure the application using standalone providers:
 
-    return schemaSvc.init(dbConfig);
-  };
-}
+```typescript
+import { bootstrapApplication } from '@angular/platform-browser';
+import { RouteReuseStrategy, provideRouter, withPreloading } from '@angular/router';
+import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
+import { APP_INITIALIZER, importProvidersFrom, Injector } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+import { Capacitor } from '@capacitor/core';
 
-@NgModule({
-  declarations: [AppComponent],
-  imports: [
-    BrowserModule,
-    HttpClientModule,
-    IonicModule.forRoot(),
-    UniversalZoneModule.forRoot(),
-    DbModule.forRoot()
-  ],
-  providers: [
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeDb,
-      multi: true,
-      deps: [SchemaService]
-    }
-  ],
-  bootstrap: [AppComponent],
-})
-export class AppModule {
-  constructor(injector: Injector) {
-    AppInjector.setInjector(injector);
-  }
+import { AppInjector, provideUniversalZone, FlagBasedPreloadingStrategy } from 'ngx-universal-zone';
+import { provideDb, SchemaService } from 'ngx-universal-zone/database';
+import { NgxPubSubModule } from 'ngx-universal-zone/pub-sub';
+import { APP_CONFIG_TOKEN, provideUniversalZoneIonic } from 'ngx-ionic-zone';
+import { provideDbSqlite } from 'ngx-ionic-zone/database';
+
+import { routes } from './app/app.routes';
+import { AppComponent } from './app/app.component';
+import { AppConfig } from './app/modules/universal/app-constant';
+import { dbConfig } from './app/modules/universal/db-constant';
+
+export function provideDependentModules() {
+  return importProvidersFrom([
+    NgxPubSubModule,
+  ]);
 }
 
-```
+async function main() {
+  const platform = await Capacitor.getPlatform();
+  const dbProvider = platform === 'web' ? provideDb() : provideDbSqlite();
 
-If you are testing the library locally then also go to your app root tsconfig.json file and add the following to **compilerOptions**:
-
-```
-"paths": {
-  "ngx-universal-zone/*":  ["./node_modules/ngx-universal-zone/*"],
+  bootstrapApplication(AppComponent, {
+    providers: [
+      { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+      provideIonicAngular({
+        useSetInputAPI: true,
+      }),
+      provideRouter(routes, withPreloading(FlagBasedPreloadingStrategy)),
+      provideHttpClient(),
+      {
+        provide: APP_INITIALIZER,
+        useFactory: (injector: Injector, schemaSvc: SchemaService) => {
+          AppInjector.setInjector(injector);
+          return async () => {
+            schemaSvc.init(dbConfig);
+          };
+        },
+        multi: true,
+        deps: [Injector, SchemaService]
+      },
+      { provide: APP_CONFIG_TOKEN, useValue: AppConfig },
+      dbProvider,
+      provideDependentModules(),
+      provideUniversalZone(),
+      provideUniversalZoneIonic(),
+    ],
+  });
 }
+
+main();
 ```
 
-and in `angular.json` add `"preserveSymlinks": true` as shown below:
+### Listening to Database Initialization
 
-```
-"architect": {
-  "build": {
-    "builder": "@angular-devkit/build-angular:application",
-    "options": {
-      "outputPath": "dist/web",
-      "index": "src/index.html",
-      "browser": "src/main.ts",
-      **"preserveSymlinks": true**, //This might not be needed. Only add if needed
-      "polyfills": [
-        "zone.js"
-      ],
+Once configured, listen to the database initialization event:
 
-```
-
-Now listen to dbinit and the rest do your magic!
-
-```
+```typescript
 this.dbSvc.dbInitialized$.subscribe(async () => {
-  //Your app should start from here
+  // Your app should start from here
 });
-
 ```
