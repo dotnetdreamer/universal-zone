@@ -3,14 +3,23 @@ import { HttpClient, HttpHeaders, HttpErrorResponse, HttpContext, HttpContextTok
 
 // import { CapacitorHttp } from '@capacitor/core';
 
-import { BehaviorSubject, catchError, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, tap, throwError } from 'rxjs';
 import { APP_CONFIG_TOKEN, IAppConfig } from './app-config';
+
+/**
+ * API response wrapper matching backend CamelCaseResult
+ */
+export interface IApiResponse<T = any> {
+  data: T;
+  statusCode: number;
+  exception?: any;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class BaseHttpService {
-  private _httpInProgressRequest = new BehaviorSubject<HttpParams>(null);
+  private _httpInProgressRequest = new BehaviorSubject<HttpParams | null>(null);
 
   protected http: HttpClient;
   protected config: IAppConfig;
@@ -20,6 +29,196 @@ export class BaseHttpService {
   constructor() {
     this.http = inject(HttpClient);
     this.config = inject(APP_CONFIG_TOKEN);
+  }
+
+  /**
+   * Prepare HTTP headers with authentication and localization
+   * Override in subclass to add custom headers (e.g., auth tokens)
+   * @returns Promise of HttpHeaders with common headers
+   */
+  protected async prepareHeaders(): Promise<HttpHeaders> {
+    return new HttpHeaders({
+      'Content-Type': 'application/json;charset=utf-8'
+    });
+  }
+
+  /**
+   * Wrap raw API response into IApiResponse format
+   * Handles both wrapped ({ data, statusCode, exception }) and unwrapped (direct data) responses
+   */
+  private wrapResponse<T>(response: any): IApiResponse<T> {
+    // Check if response is already wrapped in IApiResponse format
+    if (response && typeof response === 'object' && 'data' in response) {
+      return response as IApiResponse<T>;
+    }
+    
+    // Unwrapped response - wrap it
+    return {
+      data: response as T,
+      statusCode: 200
+    };
+  }
+
+  /**
+   * Perform GET request to API with IApiResponse wrapper
+   * @param args - HttpParams with url, body (as query params), headers, etc.
+   * @returns Observable of wrapped API response
+   */
+  protected getData<T>(args: HttpParams): Observable<IApiResponse<T>> {
+    return new Observable((observer) => {
+      this.prepareHeaders().then(baseHeaders => {
+        let fullUrl = args.overrideUrl ? args.url : `${this.config.baseApiUrl}${args.url}`;
+
+        // Append query parameters from body
+        if (args.body) {
+          const params = new URLSearchParams();
+          Object.keys(args.body).forEach(key => {
+            if (args.body[key] !== null && args.body[key] !== undefined) {
+              params.append(key, args.body[key].toString());
+            }
+          });
+          const queryString = params.toString();
+          if (queryString) {
+            fullUrl += fullUrl.includes('?') ? `&${queryString}` : `?${queryString}`;
+          }
+        }
+
+        // Merge custom headers with base headers
+        let headers = baseHeaders;
+        if (args.headers) {
+          for (const prop in args.headers) {
+            if (args.headers.hasOwnProperty(prop) && args.headers[prop]) {
+              headers = headers.set(prop, args.headers[prop]);
+            }
+          }
+        }
+
+        this.http.get<any>(fullUrl, { headers }).subscribe({
+          next: (response) => {
+            const wrappedResponse: IApiResponse<T> = this.wrapResponse(response);
+            observer.next(wrappedResponse);
+            observer.complete();
+          },
+          error: (error) => {
+            if (args.errorCallback) {
+              args.errorCallback(error, args);
+            }
+            observer.error(error);
+          }
+        });
+      });
+    });
+  }
+
+  /**
+   * Perform POST request to API with IApiResponse wrapper
+   * @param args - HttpParams with url, body, headers, etc.
+   * @returns Observable of wrapped API response
+   */
+  protected postData<T>(args: HttpParams): Observable<IApiResponse<T>> {
+    return new Observable((observer) => {
+      this.prepareHeaders().then(baseHeaders => {
+        const fullUrl = args.overrideUrl ? args.url : `${this.config.baseApiUrl}${args.url}`;
+
+        // Merge custom headers with base headers
+        let headers = baseHeaders;
+        if (args.headers) {
+          for (const prop in args.headers) {
+            if (args.headers.hasOwnProperty(prop) && args.headers[prop]) {
+              headers = headers.set(prop, args.headers[prop]);
+            }
+          }
+        }
+
+        this.http.post<any>(fullUrl, args.body || {}, { headers }).subscribe({
+          next: (response) => {
+            const wrappedResponse: IApiResponse<T> = this.wrapResponse(response);
+            observer.next(wrappedResponse);
+            observer.complete();
+          },
+          error: (error) => {
+            if (args.errorCallback) {
+              args.errorCallback(error, args);
+            }
+            observer.error(error);
+          }
+        });
+      });
+    });
+  }
+
+  /**
+   * Perform PUT request to API with IApiResponse wrapper
+   * @param args - HttpParams with url, body, headers, etc.
+   * @returns Observable of wrapped API response
+   */
+  protected putData<T>(args: HttpParams): Observable<IApiResponse<T>> {
+    return new Observable((observer) => {
+      this.prepareHeaders().then(baseHeaders => {
+        const fullUrl = args.overrideUrl ? args.url : `${this.config.baseApiUrl}${args.url}`;
+
+        // Merge custom headers with base headers
+        let headers = baseHeaders;
+        if (args.headers) {
+          for (const prop in args.headers) {
+            if (args.headers.hasOwnProperty(prop) && args.headers[prop]) {
+              headers = headers.set(prop, args.headers[prop]);
+            }
+          }
+        }
+
+        this.http.put<any>(fullUrl, args.body || {}, { headers }).subscribe({
+          next: (response) => {
+            const wrappedResponse: IApiResponse<T> = this.wrapResponse(response);
+            observer.next(wrappedResponse);
+            observer.complete();
+          },
+          error: (error) => {
+            if (args.errorCallback) {
+              args.errorCallback(error, args);
+            }
+            observer.error(error);
+          }
+        });
+      });
+    });
+  }
+
+  /**
+   * Perform DELETE request to API with IApiResponse wrapper
+   * @param args - HttpParams with url, headers, etc.
+   * @returns Observable of wrapped API response
+   */
+  protected deleteData<T>(args: HttpParams): Observable<IApiResponse<T>> {
+    return new Observable((observer) => {
+      this.prepareHeaders().then(baseHeaders => {
+        const fullUrl = args.overrideUrl ? args.url : `${this.config.baseApiUrl}${args.url}`;
+
+        // Merge custom headers with base headers
+        let headers = baseHeaders;
+        if (args.headers) {
+          for (const prop in args.headers) {
+            if (args.headers.hasOwnProperty(prop) && args.headers[prop]) {
+              headers = headers.set(prop, args.headers[prop]);
+            }
+          }
+        }
+
+        this.http.delete<any>(fullUrl, { headers }).subscribe({
+          next: (response) => {
+            const wrappedResponse: IApiResponse<T> = this.wrapResponse(response);
+            observer.next(wrappedResponse);
+            observer.complete();
+          },
+          error: (error) => {
+            if (args.errorCallback) {
+              args.errorCallback(error, args);
+            }
+            observer.error(error);
+          }
+        });
+      });
+    });
   }
 
   protected getDataRx<T>(args: HttpParams) {
