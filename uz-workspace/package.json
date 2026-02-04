@@ -31,7 +31,7 @@
     "core-js": "^3.44.0",
     "date-fns": "^4.1.0",
     "dexie": "^4.2.1",
-    "ionicons": "^7.0.0",
+    "ionicons": "^8.0.13",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
@@ -46,7 +46,7 @@
     "@angular/cli": "^20.0.0",
     "@angular/compiler-cli": "^20.0.0",
     "@angular/language-service": "^20.0.0",
-    "@capacitor/cli": "^7.4.4",
+    "@capacitor/cli": "^7.4.5",
     "@ionic/angular-toolkit": "^12.0.0",
     "@types/jasmine": "~5.1.0",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
