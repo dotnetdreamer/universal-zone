@@ -1,20 +1,18 @@
-import { Inject, Injectable } from "@angular/core";
+import { Injectable } from "@angular/core";
 
 import { BehaviorSubject, distinctUntilChanged, Observable, Subject } from "rxjs";
 import { Network } from "@capacitor/network";
 
-import { APP_CONFIG_TOKEN, BaseHttpService, IAppConfig } from "ngx-ionic-zone";
+import { BaseHttpService } from "ngx-ionic-zone";
 
 @Injectable({
   providedIn: 'root'
 })
 export class NetworkService extends BaseHttpService {
-  private ngDestroy = new Subject<void>();
-  
   connected$: Observable<boolean>;
   statusSubject = new BehaviorSubject<boolean>(true);
 
-  constructor(@Inject(APP_CONFIG_TOKEN) private appConfig: IAppConfig) {
+  constructor() {
     super();
 
     Network.getStatus().then((status) =>
